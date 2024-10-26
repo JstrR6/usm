@@ -8,9 +8,12 @@ const mongoUri = process.env.MONGO_URI;
 
 // MongoDB Model
 const memberSchema = new mongoose.Schema({
-    discordId: { type: String, unique: true },
+    discordId: { type: String, required: true },
+    guildId: { type: String, required: true },
     username: String,
-    joinedAt: Date
+    joinedAt: Date,
+    roles: [String],
+    highestRole: String
 });
 const Member = mongoose.model('Member', memberSchema);
 
@@ -36,18 +39,26 @@ client.once('ready', async () => {
         const members = await guild.members.fetch(); // Fetch all members
 
         members.forEach(async (member) => {
-            // Store each member in MongoDB
             try {
+                // Get all role IDs
+                const roleIds = member.roles.cache.map(role => role.id);
+                
+                // Get the highest role (excluding @everyone)
+                const highestRole = member.roles.highest.id === guild.id ? null : member.roles.highest.id;
+
                 await Member.findOneAndUpdate(
-                    { discordId: member.user.id },
+                    { discordId: member.user.id, guildId: guild.id },
                     {
                         discordId: member.user.id,
+                        guildId: guild.id,
                         username: member.user.tag,
-                        joinedAt: member.joinedAt
+                        joinedAt: member.joinedAt,
+                        roles: roleIds,
+                        highestRole: highestRole
                     },
                     { upsert: true, new: true }
                 );
-                console.log(`Stored ${member.user.tag} in MongoDB.`);
+                console.log(`Stored ${member.user.tag} in MongoDB with roles.`);
             } catch (error) {
                 console.error(`Failed to store member ${member.user.tag}: ${error.message}`);
             }
