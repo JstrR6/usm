@@ -48,29 +48,24 @@ client.once('ready', async () => {
                 // Get the highest role (excluding @everyone)
                 const highestRole = member.roles.highest.id === guild.id ? null : member.roles.highest.id;
 
-                await Member.findOneAndUpdate(
-                    { discordId: member.user.id, guildId: guild.id },
-                    {
-                        $set: {
-                            discordId: member.user.id,
-                            guildId: guild.id,
-                            username: member.user.tag,
-                            joinedAt: member.joinedAt,
-                            roles: roleIds,
-                            highestRole: highestRole
-                        }
-                    },
-                    { upsert: true, new: true }
-                );
-                console.log(`Stored/Updated ${member.user.tag} in MongoDB with roles.`);
-            } catch (error) {
-                if (error.code === 11000) {
-                    console.log(`Duplicate key error for member ${member.user.tag}. Updating instead.`);
-                    try {
-                        // Perform an update operation here
-                        const roleIds = member.roles.cache.map(role => role.id);
-                        const highestRole = member.roles.highest.id === guild.id ? null : member.roles.highest.id;
-                        
+                try {
+                    // Attempt upsert
+                    await Member.findOneAndUpdate(
+                        { discordId: member.user.id, guildId: guild.id },
+                        {
+                            $set: {
+                                username: member.user.tag,
+                                joinedAt: member.joinedAt,
+                                roles: roleIds,
+                                highestRole: highestRole
+                            }
+                        },
+                        { upsert: true, new: true }
+                    );
+                } catch (error) {
+                    if (error.code === 11000) {
+                        console.log(`Duplicate key error for member ${member.user.tag}. Updating instead.`);
+                        // Perform update operation
                         await Member.updateOne(
                             { discordId: member.user.id, guildId: guild.id },
                             {
@@ -83,12 +78,13 @@ client.once('ready', async () => {
                             }
                         );
                         console.log(`Updated ${member.user.tag} in MongoDB with roles.`);
-                    } catch (updateError) {
-                        console.error(`Failed to update member ${member.user.tag}: ${updateError.message}`);
+                    } else {
+                        console.error(`Failed to update member ${member.user.tag}: ${error.message}`);
                     }
-                } else {
-                    console.error(`Failed to store/update member ${member.user.tag}: ${error.message}`);
                 }
+                console.log(`Stored/Updated ${member.user.tag} in MongoDB with roles.`);
+            } catch (error) {
+                console.error(`Failed to store/update member ${member.user.tag}: ${error.message}`);
             }
         });
     } else {
