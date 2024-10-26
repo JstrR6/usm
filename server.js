@@ -1,11 +1,19 @@
 const express = require('express');
+const { spawn } = require('child_process');
 const path = require('path');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('./models/User');
+const bodyParser = require('body-parser');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
+
+// Parse JSON bodies
+app.use(bodyParser.json());
+
+// Parse URL-encoded bodies
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -53,6 +61,26 @@ app.get('/status', (req, res) => {
   res.json({ status: 'ready' });
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server is running on port ${port}`);
+// Function to start bot.js
+function startBot() {
+  const bot = spawn('node', [path.join(__dirname, 'bot.js')]);
+
+  bot.stdout.on('data', (data) => {
+    console.log(`Bot output: ${data}`);
+  });
+
+  bot.stderr.on('data', (data) => {
+    console.error(`Bot error: ${data}`);
+  });
+
+  bot.on('close', (code) => {
+    console.log(`Bot process exited with code ${code}`);
+  });
+}
+
+// Start the bot when the server starts
+startBot();
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
