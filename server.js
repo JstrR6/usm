@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 // Parse JSON bodies
 app.use(bodyParser.json());
+app.use(express.json());
 
 // Parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -31,10 +32,13 @@ app.get('*', (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
+  console.log('Request body:', req.body);
   const { username, password } = req.body;
+  console.log('Attempting login for username:', username);
 
   try {
     let user = await User.findOne({ discordUsername: username });
+    console.log('User found:', user);
 
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
@@ -59,7 +63,7 @@ app.post('/api/login', async (req, res) => {
     res.status(200).json({ message: 'Login successful' });
 
   } catch (error) {
-    console.error(error);
+    console.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
