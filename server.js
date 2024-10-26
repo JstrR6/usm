@@ -1,9 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const User = require('./models/User');
+const User = require('./models/Member');
 const bodyParser = require('body-parser');
 const path = require('path');
+const Member = require('./models/Member');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
