@@ -37,7 +37,7 @@ app.post('/api/login', async (req, res) => {
   console.log('Attempting login for username:', username);
 
   try {
-    let member = await Member.findOne({ discordUsername: username });
+    let member = await Member.findOne({ discordUsername: { $regex: new RegExp('^' + username + '$', 'i') } });
     console.log('Member found:', member);
 
     if (!member) {
