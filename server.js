@@ -37,23 +37,23 @@ app.post('/api/login', async (req, res) => {
   console.log('Attempting login for username:', username);
 
   try {
-    let user = await User.findOne({ discordUsername: username });
-    console.log('User found:', user);
+    let member = await Member.findOne({ discordUsername: username });
+    console.log('Member found:', member);
 
-    if (!user) {
-      return res.status(400).json({ message: 'User not found' });
+    if (!member) {
+      return res.status(400).json({ message: 'Member not found' });
     }
 
-    if (!user.password) {
-      // New user, set password
+    if (!member.password) {
+      // New member, set password
       const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
-      await user.save();
+      member.password = await bcrypt.hash(password, salt);
+      await member.save();
       return res.status(200).json({ message: 'Password set successfully. Please login again.' });
     }
 
-    // Existing user, check password
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Existing member, check password
+    const isMatch = await bcrypt.compare(password, member.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
