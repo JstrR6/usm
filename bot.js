@@ -15,6 +15,8 @@ const memberSchema = new mongoose.Schema({
     roles: [String],
     highestRole: String
 });
+memberSchema.index({ discordId: 1, guildId: 1 }, { unique: true });
+memberSchema.index({ username: 1 }, { unique: true, sparse: true });
 const Member = mongoose.model('Member', memberSchema);
 
 // Discord client setup
@@ -49,18 +51,41 @@ client.once('ready', async () => {
                 await Member.findOneAndUpdate(
                     { discordId: member.user.id, guildId: guild.id },
                     {
-                        discordId: member.user.id,
-                        guildId: guild.id,
-                        username: member.user.tag,
-                        joinedAt: member.joinedAt,
-                        roles: roleIds,
-                        highestRole: highestRole
+                        $set: {
+                            discordId: member.user.id,
+                            guildId: guild.id,
+                            username: member.user.tag,
+                            joinedAt: member.joinedAt,
+                            roles: roleIds,
+                            highestRole: highestRole
+                        }
                     },
                     { upsert: true, new: true }
                 );
                 console.log(`Stored/Updated ${member.user.tag} in MongoDB with roles.`);
             } catch (error) {
-                console.error(`Failed to store/update member ${member.user.tag}: ${error.message}`);
+                if (error.code === 11000) {
+                    console.log(`Duplicate key error for member ${member.user.tag}. Updating instead.`);
+                    try {
+                        // Perform an update operation here
+                        await Member.updateOne(
+                            { discordId: member.user.id, guildId: guild.id },
+                            {
+                                $set: {
+                                    username: member.user.tag,
+                                    joinedAt: member.joinedAt,
+                                    roles: roleIds,
+                                    highestRole: highestRole
+                                }
+                            }
+                        );
+                        console.log(`Updated ${member.user.tag} in MongoDB with roles.`);
+                    } catch (updateError) {
+                        console.error(`Failed to update member ${member.user.tag}: ${updateError.message}`);
+                    }
+                } else {
+                    console.error(`Failed to store/update member ${member.user.tag}: ${error.message}`);
+                }
             }
         });
     } else {
