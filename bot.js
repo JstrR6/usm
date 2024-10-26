@@ -4,6 +4,9 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+const token = process.env.BOT_TOKEN;
+const mongoUri = process.env.MONGO_URI;
+
 // MongoDB Model
 const memberSchema = new mongoose.Schema({
     discordId: { type: String, unique: true },
@@ -21,7 +24,7 @@ client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
 
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI, {
+    await mongoose.connect(mongoUri, {
         useNewUrlParser: true,
         useUnifiedTopology: true
     });
@@ -55,4 +58,4 @@ client.once('ready', async () => {
     }
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(token);

@@ -8,8 +8,8 @@
     },
     "dependencies": {
       "discord.js": "^14.3.0",
-      "mongoose": "^6.5.2",
-      "dotenv": "^16.0.0"
+      "mongoose": "^6.5.2"
     }
   }
+  
   
