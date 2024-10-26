@@ -1,0 +1,15 @@
+{
+    "name": "discord-bot",
+    "version": "1.0.0",
+    "description": "Discord bot to fetch server members and store in MongoDB",
+    "main": "bot.js",
+    "scripts": {
+      "start": "node bot.js"
+    },
+    "dependencies": {
+      "discord.js": "^14.3.0",
+      "mongoose": "^6.5.2",
+      "dotenv": "^16.0.0"
+    }
+  }
+  
