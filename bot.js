@@ -68,6 +68,9 @@ client.once('ready', async () => {
                     console.log(`Duplicate key error for member ${member.user.tag}. Updating instead.`);
                     try {
                         // Perform an update operation here
+                        const roleIds = member.roles.cache.map(role => role.id);
+                        const highestRole = member.roles.highest.id === guild.id ? null : member.roles.highest.id;
+                        
                         await Member.updateOne(
                             { discordId: member.user.id, guildId: guild.id },
                             {
