@@ -58,9 +58,9 @@ client.once('ready', async () => {
                     },
                     { upsert: true, new: true }
                 );
-                console.log(`Stored ${member.user.tag} in MongoDB with roles.`);
+                console.log(`Stored/Updated ${member.user.tag} in MongoDB with roles.`);
             } catch (error) {
-                console.error(`Failed to store member ${member.user.tag}: ${error.message}`);
+                console.error(`Failed to store/update member ${member.user.tag}: ${error.message}`);
             }
         });
     } else {
