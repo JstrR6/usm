@@ -1,6 +1,4 @@
 const express = require('express');
-const { spawn } = require('child_process');
-const path = require('path');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('./models/User');
@@ -15,8 +13,16 @@ app.use(bodyParser.json());
 // Parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('Error connecting to MongoDB:', err));
+
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
 // Handle all routes by serving index.html
 app.get('*', (req, res) => {
@@ -60,26 +66,6 @@ app.post('/api/login', async (req, res) => {
 app.get('/status', (req, res) => {
   res.json({ status: 'ready' });
 });
-
-// Function to start bot.js
-function startBot() {
-  const bot = spawn('node', [path.join(__dirname, 'bot.js')]);
-
-  bot.stdout.on('data', (data) => {
-    console.log(`Bot output: ${data}`);
-  });
-
-  bot.stderr.on('data', (data) => {
-    console.error(`Bot error: ${data}`);
-  });
-
-  bot.on('close', (code) => {
-    console.log(`Bot process exited with code ${code}`);
-  });
-}
-
-// Start the bot when the server starts
-startBot();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
