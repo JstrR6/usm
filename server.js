@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const User = require('./models/User');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -49,6 +49,10 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.get('/status', (req, res) => {
+  res.json({ status: 'ready' });
+});
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server is running on port ${port}`);
 });
