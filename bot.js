@@ -2,7 +2,6 @@
 
 const { Client, GatewayIntentBits } = require('discord.js');
 const mongoose = require('mongoose');
-require('dotenv').config();
 
 const token = process.env.BOT_TOKEN;
 const mongoUri = process.env.MONGO_URI;
