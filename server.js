@@ -136,6 +136,15 @@ async function findUser(username, password) {
   }
 }
 
+// Serve static files
+app.use(express.static('public'));
+
+// Render the index page
+app.get('/', (req, res) => {
+  res.render('index');
+});
+
+// Start server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
