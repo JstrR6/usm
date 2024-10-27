@@ -42,7 +42,7 @@ app.post('/api/login', async (req, res) => {
     console.log('All usernames in database:', allMembers.map(m => m.username));
 
     let member = await Member.findOne({ 
-      username: { $regex: new RegExp('^' + username + '$', 'i') } 
+      username: username // Direct match with the tag
     });
     console.log('Member found:', member);
 
