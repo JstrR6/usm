@@ -1,8 +1,6 @@
 const { Client, GatewayIntentBits } = require('discord.js'); // Assuming you have a Role model
 const Member = require('./models/Member');
 
-const token = process.env.BOT_TOKEN; // Ensure your bot token is set in the environment variables
-
 // Discord client setup
 const client = new Client({ 
     intents: [GatewayIntentBits.Guilds]
@@ -13,8 +11,8 @@ let roleMap = new Map();
 client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
 
-    // Replace 'YOUR_GUILD_ID' with the actual guild ID you want to access
-    const guildId = process.env.GUILD_ID; // Use environment variable for guild ID
+    // Use environment variables directly from Render.com
+    const guildId = process.env.GUILD_ID; // Ensure this is set in Render.com
     const guild = client.guilds.cache.get(guildId);
 
     if (guild) {
@@ -51,5 +49,5 @@ module.exports = {
     getRoleNamesByIds
 };
 
-// Log in to Discord
-client.login(token).catch(error => console.error('Error logging in:', error));
+// Log in to Discord using the token from Render.com
+client.login(process.env.BOT_TOKEN).catch(error => console.error('Error logging in:', error));
