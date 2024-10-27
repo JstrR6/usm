@@ -48,8 +48,8 @@
     <div class="container">
         <h1>Welcome to Discord Bot Dashboard</h1>
         <p>Please log in to access the dashboard.</p>
-        <form action="/login" method="POST">
-            <input type="email" name="email" placeholder="Email" required>
+        <form action="/api/login" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
