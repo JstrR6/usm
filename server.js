@@ -2,11 +2,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const Member = require('./models/Member');
+const Training = require('./models/Training');
+const PendingApproval = require('./models/PendingApproval');
 const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
 const passport = require('passport');
 const { getRoleNameById } = require('./roleManager'); // Import the function
+const { v4: uuidv4 } = require('uuid'); // Use UUID for unique training IDs
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -172,6 +175,131 @@ async function findUser(username, password) {
 function getHighestRoleName(user) {
   return getRoleNameById(user.highestRole) || 'No role assigned';
 }
+
+// API endpoint to update XP
+app.post('/api/update-xp', async (req, res) => {
+  const { discordId, xpChange } = req.body;
+
+  try {
+    const member = await Member.findOne({ discordId: discordId });
+    if (!member) {
+      return res.status(404).json({ success: false, message: 'Member not found' });
+    }
+
+    // Update the XP
+    member.xp += xpChange;
+    await member.save();
+
+    res.status(200).json({ success: true, message: 'XP updated successfully', xp: member.xp });
+  } catch (error) {
+    console.error('Error updating XP:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Route to render the Training Form
+app.get('/forms/training', (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/');
+  }
+  res.render('training', { username: req.session.user.username });
+});
+
+// API endpoint to update XP via Training Form
+app.post('/forms/training', async (req, res) => {
+  const { discordId, xpChange } = req.body;
+
+  try {
+    const member = await Member.findOne({ discordId: discordId });
+    if (!member) {
+      return res.status(404).json({ success: false, message: 'Member not found' });
+    }
+
+    // Update the XP
+    member.xp += xpChange;
+    await member.save();
+
+    res.status(200).json({ success: true, message: 'XP updated successfully', xp: member.xp });
+  } catch (error) {
+    console.error('Error updating XP:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Validate trainer's role
+app.post('/api/validate-trainer', async (req, res) => {
+  const { username } = req.body;
+  try {
+    const member = await Member.findOne({ username: username });
+    if (member && member.roles.includes('Drill Instructor')) {
+      res.json({ isValid: true });
+    } else {
+      res.json({ isValid: false });
+    }
+  } catch (error) {
+    console.error('Error validating trainer:', error);
+    res.status(500).json({ isValid: false });
+  }
+});
+
+// Handle training form submission
+app.post('/forms/training', async (req, res) => {
+  const { trainerUsername, trainingType, xpAward, attendees } = req.body;
+  try {
+    const trainer = await Member.findOne({ username: trainerUsername });
+    if (!trainer || !trainer.roles.includes('Drill Instructor')) {
+      return res.status(400).json({ success: false, message: 'Drill Instructor\'s Only' });
+    }
+
+    // Check for frequent submissions
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recentSessions = await Training.find({
+      attendees: { $in: attendees },
+      date: { $gte: fiveMinutesAgo }
+    });
+
+    const needsApproval = xpAward >= 10 || recentSessions.length >= 3;
+    const trainingId = uuidv4(); // Generate a unique training ID
+
+    if (needsApproval) {
+      // Log the session in PendingApproval
+      const pendingSession = new PendingApproval({
+        trainingId,
+        trainerId: trainer.discordId,
+        attendees,
+        trainingType,
+        xpAward,
+        needsApproval: true
+      });
+      await pendingSession.save();
+      return res.status(200).json({ success: true, message: 'Training session logged for approval.' });
+    }
+
+    // Create a new training session
+    const trainingSession = new Training({
+      trainingId,
+      trainerId: trainer.discordId,
+      attendees,
+      trainingType,
+      xpAward
+    });
+    await trainingSession.save();
+
+    // Update XP for each attendee
+    for (const attendeeUsername of attendees) {
+      const attendee = await Member.findOne({ username: attendeeUsername });
+      if (attendee) {
+        attendee.xp += xpAward;
+        await attendee.save();
+      }
+    }
+
+    res.status(200).json({ success: true, message: 'Training session recorded and XP updated.' });
+  } catch (error) {
+    console.error('Error handling training form:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 // Start server
 app.listen(PORT, () => {

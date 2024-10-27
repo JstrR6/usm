@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forms</title>
+    <title>Training Form</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
@@ -49,6 +49,29 @@
         .content {
             padding: 10px;
         }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .form-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -65,12 +88,79 @@
             <h1>Welcome, <%= username %>!</h1>
         </div>
         <div class="content">
-            <h2>Forms</h2>
-            <p>This is your forms page.</p>
+            <h2>Training Form</h2>
+            <form id="trainingForm">
+                <div class="form-group">
+                    <label for="trainerUsername">Trainer's Username:</label>
+                    <input type="text" id="trainerUsername" name="trainerUsername" required>
+                </div>
+                <div id="trainerValidationMessage" style="color: red;"></div>
+                <div id="trainingDetails" style="display: none;">
+                    <div class="form-group">
+                        <label for="trainingType">Training Type:</label>
+                        <select id="trainingType" name="trainingType" required>
+                            <option value="Training Session">Training Session</option>
+                            <option value="Rally Session">Rally Session</option>
+                            <option value="Accommodation">Accommodation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="xpAward">XP Award:</label>
+                        <input type="number" id="xpAward" name="xpAward" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="attendees">Attendee(s) Usernames (comma-separated):</label>
+                        <input type="text" id="attendees" name="attendees" required>
+                    </div>
+                    <button type="submit" class="form-button">Submit</button>
+                </div>
+            </form>
+            <p id="xpMessage"></p>
         </div>
     </div>
     <script>
-        // Include your JavaScript here
+        document.getElementById('trainerUsername').addEventListener('blur', function() {
+            const trainerUsername = this.value;
+            fetch('/api/validate-trainer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: trainerUsername })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.isValid) {
+                    document.getElementById('trainerValidationMessage').textContent = '';
+                    document.getElementById('trainingDetails').style.display = 'block';
+                } else {
+                    document.getElementById('trainerValidationMessage').textContent = 'Drill Instructor\'s Only';
+                    document.getElementById('trainingDetails').style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('trainingForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const trainerUsername = document.getElementById('trainerUsername').value;
+            const trainingType = document.getElementById('trainingType').value;
+            const xpAward = parseInt(document.getElementById('xpAward').value);
+            const attendees = document.getElementById('attendees').value.split(',').map(name => name.trim());
+
+            fetch('/forms/training', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ trainerUsername, trainingType, xpAward, attendees })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('xpMessage').textContent = data.message;
+            })
+            .catch(error => console.error('Error:', error));
+        });
     </script>
 </body>
 </html>
