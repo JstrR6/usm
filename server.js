@@ -227,8 +227,8 @@ app.post('/forms/training', async (req, res) => {
       const trainer = await Member.findOneAndUpdate(
         { username: trainerUsername.trim() },
         { $inc: { xp: xpAward } }, // Increment XP
-        { new: true, upsert: true } // Create if not exists
-      );
+        { new: true, upsert: true, setDefaultsOnInsert: true } // Create if not exists
+      ).exec();
       if (trainer) {
         trainerId = trainer._id.toString(); // Capture the trainer's ID as a string
         updatedMembers.push(trainerUsername);
@@ -244,8 +244,8 @@ app.post('/forms/training', async (req, res) => {
         const attendee = await Member.findOneAndUpdate(
           { username: attendeeUsername.trim() },
           { $inc: { xp: xpAward } }, // Increment XP
-          { new: true, upsert: true } // Create if not exists
-        );
+          { new: true, upsert: true, setDefaultsOnInsert: true } // Create if not exists
+        ).exec();
         if (attendee) {
           updatedMembers.push(attendeeUsername);
           console.log(`XP updated for attendee: ${attendeeUsername}`);
