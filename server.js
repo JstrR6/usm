@@ -172,9 +172,10 @@ async function findUser(username, password) {
 }
 
 // Function to get the highest role name
-function getHighestRoleName(user) {
-  return getRoleNamesByIds(user.roles) || 'No role assigned';
-}
+async function displayUserRole(user) {
+    const highestRole = await getHighestRoleName(user);
+    console.log(`Highest role for user ${user.username}: ${highestRole}`);
+  }
 
 // API endpoint to update XP
 app.post('/api/update-xp', async (req, res) => {
@@ -321,3 +322,8 @@ app.post('/forms/training', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+async function displayUserRole(user) {
+  const highestRole = await getHighestRoleName(user);
+  console.log(`Highest role for user ${user.username}: ${highestRole}`);
+}
