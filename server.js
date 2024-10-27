@@ -89,9 +89,10 @@ app.get('/dashboard', (req, res) => {
   res.render('dashboard', { user: req.user });
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  if (findUser(username, password)) {
+  const user = await findUser(username, password);
+  if (user) {
     // If user is found, send a JSON response with redirect URL
     res.json({ 
       success: true, 
@@ -106,6 +107,20 @@ app.get('/dashboard/:username', (req, res) => {
   const { username } = req.params;
   res.render('dashboard', { username: username });
 });
+
+async function findUser(username, password) {
+  try {
+    const user = await Member.findOne({ username: username });
+    if (!user) {
+      return null;
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    return isMatch ? user : null;
+  } catch (error) {
+    console.error('Error finding user:', error);
+    return null;
+  }
+}
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
