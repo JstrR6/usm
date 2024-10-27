@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
 const passport = require('passport');
+const { getRoleNameById } = require('./roleManager'); // Import the function
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -101,7 +102,14 @@ app.get('/dashboard', (req, res) => {
     console.log('User not authenticated, redirecting to login');
     return res.redirect('/');
   }
-  res.render('dashboard', { username: req.session.user.username });
+
+  // Fetch the highest role name using roleManager.js
+  const highestRoleName = getRoleNameById(req.session.user.highestRole) || 'No role assigned';
+
+  res.render('dashboard', { 
+    username: req.session.user.username,
+    highestRoleName: highestRoleName
+  });
 });
 
 app.post('/login', async (req, res) => {
