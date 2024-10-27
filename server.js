@@ -208,10 +208,11 @@ app.get('/forms/training', (req, res) => {
 
 // API endpoint to update XP via Training Form
 app.post('/forms/training', async (req, res) => {
-  const { discordId, xpChange } = req.body;
+  const { username, xpChange } = req.body; // Use username instead of discordId
 
   try {
-    const member = await Member.findOne({ username: username }); // Change to search by username
+    // Find the member using the username
+    const member = await Member.findOne({ username: username });
     if (!member) {
       return res.status(404).json({ success: false, message: 'Member not found' });
     }
@@ -224,7 +225,7 @@ app.post('/forms/training', async (req, res) => {
   } catch (error) {
     console.error('Error updating XP:', error);
     res.status(500).json({ success: false, message: 'Server error' });
-  } // Add this closing brace
+  }
 });
 
 // Validate trainer's role
