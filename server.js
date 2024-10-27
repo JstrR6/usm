@@ -93,7 +93,6 @@ app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = await findUser(username, password);
   if (user) {
-    // If user is found, send a JSON response with redirect URL
     res.json({ 
       success: true, 
       redirectUrl: `/dashboard/${username}`
@@ -121,6 +120,9 @@ async function findUser(username, password) {
     return null;
   }
 }
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
