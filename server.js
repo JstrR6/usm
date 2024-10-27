@@ -63,10 +63,11 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Login successful, respond with redirect URL
+    // Login successful
     res.status(200).json({ 
       message: 'Login successful', 
-      redirectUrl: '/dashboard'
+      redirectUrl: '/dashboard',
+      username: req.user ? req.user.username : null
     });
 
   } catch (error) {
@@ -80,22 +81,30 @@ app.get('/status', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/');
+  // Check if user is authenticated
+  if (!req.user) {
+    return res.redirect('/login');
   }
-  res.sendFile(path.join(__dirname, 'public', 'dashboard.ejs'));
+  // Render the dashboard
+  res.render('dashboard', { user: req.user });
 });
 
-
-app.post('/login', (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) { return next(err); }
-    if (!user) { return res.redirect('/login'); }
-    req.logIn(user, (err) => {
-      if (err) { return next(err); }
-      return res.redirect('/dashboard');
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  if (findUser(username, password)) {
+    // If user is found, send a JSON response with redirect URL
+    res.json({ 
+      success: true, 
+      redirectUrl: `/dashboard/${username}`
     });
-  })(req, res, next);
+  } else {
+    res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+});
+
+app.get('/dashboard/:username', (req, res) => {
+  const { username } = req.params;
+  res.render('dashboard', { username: username });
 });
 
 app.listen(PORT, () => {

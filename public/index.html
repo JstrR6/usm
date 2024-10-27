@@ -19,16 +19,13 @@
             padding: 2rem;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
         }
         h1 {
+            text-align: center;
             color: #7289da;
-            margin-bottom: 1rem;
         }
         p {
-            margin-bottom: 1.5rem;
+            text-align: center;
         }
         form {
             display: flex;
@@ -37,23 +34,13 @@
         input {
             margin-bottom: 1rem;
             padding: 0.5rem;
-            font-size: 1rem;
         }
         button {
             background-color: #7289da;
             color: white;
             border: none;
-            padding: 0.75rem;
-            font-size: 1rem;
+            padding: 0.5rem;
             cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #5b6db1;
-        }
-        .error {
-            color: red;
-            margin-top: 1rem;
         }
     </style>
 </head>
@@ -62,46 +49,38 @@
         <h1>Welcome to Discord Bot Dashboard</h1>
         <p>Please log in to access the dashboard.</p>
         <form id="loginForm">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
             <button type="submit">Login</button>
         </form>
-        <p class="error" id="errorMessage"></p>
     </div>
-
     <script>
-        const loginForm = document.getElementById('loginForm');
-        const errorMessage = document.getElementById('errorMessage');
-
-        loginForm.addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
             
-            const formData = new FormData(loginForm);
-            const data = {
-                username: formData.get('username'),
-                password: formData.get('password')
-            };
-            
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    // Redirect to the dashboard if login is successful
-                    window.location.href = result.redirectUrl;
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirectUrl;
                 } else {
-                    // Show error message if login fails
-                    errorMessage.textContent = result.message || 'Login failed. Please try again.';
+                    alert(data.message);
                 }
-            } catch (error) {
-                console.error('Error during login:', error);
-                errorMessage.textContent = 'An error occurred. Please try again later.';
-            }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during login');
+            });
         });
     </script>
 </body>
