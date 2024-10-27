@@ -210,10 +210,13 @@ app.get('/forms/training', (req, res) => {
 app.post('/forms/training', async (req, res) => {
   const { username, xpChange } = req.body; // Use username instead of discordId
 
+  console.log(`Received training form submission for username: ${username}`);
+
   try {
     // Find the member using the username
-    const member = await Member.findOne({ username: username });
+    const member = await Member.findOne({ username: username.trim() }); // Trim whitespace
     if (!member) {
+      console.log(`Member not found for username: ${username}`);
       return res.status(404).json({ success: false, message: 'Member not found' });
     }
 
