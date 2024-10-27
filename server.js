@@ -4,10 +4,19 @@ const bcrypt = require('bcrypt');
 const Member = require('./models/Member');
 const bodyParser = require('body-parser');
 const path = require('path');
+const session = require('express-session');
 const passport = require('passport');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Session middleware setup
+app.use(session({
+  secret: 'your-secret-key', // Replace with a strong secret key
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true if using HTTPS
+}));
 
 // Parse JSON bodies
 app.use(bodyParser.json());
