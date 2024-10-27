@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const Member = require('./models/Member');
 const bodyParser = require('body-parser');
 const path = require('path');
+const passport = require('passport');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,7 +67,12 @@ app.post('/api/login', async (req, res) => {
 
     // Login successful
     // Here you would typically create a session or JWT token
-    res.status(200).json({ message: 'Login successful' });
+    // For this example, we'll just send a redirect URL
+    res.status(200).json({ 
+      message: 'Login successful', 
+      redirectUrl: '/dashboard',
+      username: req.user.username // Add this line
+    });
 
   } catch (error) {
     console.error('Login error:', error);
@@ -76,6 +82,26 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/status', (req, res) => {
   res.json({ status: 'ready' });
+});
+
+app.get('/dashboard', (req, res) => {
+  // Check if user is authenticated
+  if (!req.user) {
+    return res.redirect('/login');
+  }
+  // Render the dashboard
+  res.render('dashboard', { user: req.user });
+});
+
+app.post('/login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) { return next(err); }
+    if (!user) { return res.redirect('/login'); }
+    req.logIn(user, (err) => {
+      if (err) { return next(err); }
+      return res.redirect('/dashboard');
+    });
+  })(req, res, next);
 });
 
 app.listen(PORT, () => {

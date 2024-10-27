@@ -1,0 +1,24 @@
+<%- include('../partials/header') %>
+
+<h1>Welcome to your dashboard, <%= user.username %></h1>
+
+<section>
+  <h2>Your Profile</h2>
+  <p>Username: <%= user.username %></p>
+  <p>Joined: <%= user.joinedAt %></p>
+</section>
+
+<section>
+  <h2>Recent Posts</h2>
+  <% if (posts && posts.length > 0) { %>
+    <ul>
+    <% posts.forEach(function(post) { %>
+      <li><%= post.title %> - <%= post.createdAt %></li>
+    <% }); %>
+    </ul>
+  <% } else { %>
+    <p>No recent posts.</p>
+  <% } %>
+</section>
+
+<%- include('../partials/footer') %>
