@@ -1,6 +1,5 @@
 const { Client, GatewayIntentBits } = require('discord.js'); // Assuming you have a Role model
 const Member = require('./models/Member');
-require('dotenv').config(); // Ensure environment variables are loaded
 
 const token = process.env.BOT_TOKEN; // Ensure your bot token is set in the environment variables
 
