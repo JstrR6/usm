@@ -14,7 +14,7 @@ client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
 
     // Replace 'YOUR_GUILD_ID' with the actual guild ID you want to access
-    const guildId = 'YOUR_GUILD_ID';
+    const guildId = '983103502584791120';
     const guild = client.guilds.cache.get(guildId);
 
     if (guild) {
