@@ -208,7 +208,7 @@ app.get('/forms/training', (req, res) => {
 
 // API endpoint to update XP via Training Form
 app.post('/forms/training', async (req, res) => {
-  const { trainerUsername, xpAward, attendees } = req.body;
+  const { trainerUsername, trainingType, xpAward, attendees } = req.body;
 
   console.log('Request body:', req.body);
 
@@ -222,6 +222,7 @@ app.post('/forms/training', async (req, res) => {
     const updatedMembers = [];
 
     // Update XP for the trainer
+    let trainerId;
     if (trainerUsername) {
       const trainer = await Member.findOneAndUpdate(
         { username: trainerUsername.trim() },
@@ -229,6 +230,7 @@ app.post('/forms/training', async (req, res) => {
         { new: true, upsert: true } // Create if not exists
       );
       if (trainer) {
+        trainerId = trainer._id.toString(); // Capture the trainer's ID as a string
         updatedMembers.push(trainerUsername);
         console.log(`XP updated for trainer: ${trainerUsername}`);
       } else {
@@ -255,10 +257,11 @@ app.post('/forms/training', async (req, res) => {
 
     // Log the training session
     const trainingLog = new Training({
-      trainer: trainerUsername,
+      trainingId: new mongoose.Types.ObjectId().toString(), // Generate a unique ID
+      trainerId: trainerId, // Ensure this is set
       attendees: attendees,
-      action: 'Training Session',
-      xpAwarded: xpAward
+      trainingType: trainingType, // Ensure this is set
+      xpAward: xpAward // Ensure this is set
     });
     await trainingLog.save();
 
