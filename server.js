@@ -208,29 +208,44 @@ app.get('/forms/training', (req, res) => {
 
 // API endpoint to update XP via Training Form
 app.post('/forms/training', async (req, res) => {
-  const { username, xpChange } = req.body;
+  const { trainerUsername, xpAward, attendees } = req.body;
 
   // Log the entire request body for debugging
   console.log('Request body:', req.body);
 
-  if (!username) {
-    console.error('Username is missing in the request body');
-    return res.status(400).json({ success: false, message: 'Username is required' });
+  if (!trainerUsername && (!attendees || attendees.length === 0)) {
+    console.error('No usernames provided in the request body');
+    return res.status(400).json({ success: false, message: 'At least one username is required' });
   }
 
   try {
-    // Find the member using the username
-    const member = await Member.findOne({ username: username.trim() });
-    if (!member) {
-      console.log(`Member not found for username: ${username}`);
-      return res.status(404).json({ success: false, message: 'Member not found' });
+    // Update XP for the trainer
+    if (trainerUsername) {
+      const trainer = await Member.findOne({ username: trainerUsername.trim() });
+      if (trainer) {
+        trainer.xp += xpAward;
+        await trainer.save();
+        console.log(`XP updated for trainer: ${trainerUsername}`);
+      } else {
+        console.log(`Trainer not found for username: ${trainerUsername}`);
+      }
     }
 
-    // Update the XP
-    member.xp += xpChange;
-    await member.save();
+    // Update XP for each attendee
+    if (attendees && attendees.length > 0) {
+      for (const attendeeUsername of attendees) {
+        const attendee = await Member.findOne({ username: attendeeUsername.trim() });
+        if (attendee) {
+          attendee.xp += xpAward;
+          await attendee.save();
+          console.log(`XP updated for attendee: ${attendeeUsername}`);
+        } else {
+          console.log(`Attendee not found for username: ${attendeeUsername}`);
+        }
+      }
+    }
 
-    res.status(200).json({ success: true, message: 'XP updated successfully', xp: member.xp });
+    res.status(200).json({ success: true, message: 'XP updated successfully' });
   } catch (error) {
     console.error('Error updating XP:', error);
     res.status(500).json({ success: false, message: 'Server error' });
