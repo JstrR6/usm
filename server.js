@@ -37,12 +37,12 @@ app.post('/api/login', async (req, res) => {
   console.log('Attempting login for username:', username);
 
   try {
-    // Log all usernames in the database
-    const allMembers = await Member.find({}, 'discordUsername');
-    console.log('All usernames in database:', allMembers.map(m => m.discordUsername));
+    // Find all documents that have a username field
+    const allMembers = await Member.find({ username: { $exists: true } }, 'username');
+    console.log('All usernames in database:', allMembers.map(m => m.username));
 
     let member = await Member.findOne({ 
-      discordUsername: { $regex: new RegExp('^' + username + '$', 'i') } 
+      username: { $regex: new RegExp('^' + username + '$', 'i') } 
     });
     console.log('Member found:', member);
 
