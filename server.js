@@ -42,9 +42,7 @@ app.post('/api/login', async (req, res) => {
     const allMembers = await Member.find({ username: { $exists: true } }, 'username');
     console.log('All usernames in database:', allMembers.map(m => m.username));
 
-    let member = await Member.findOne({ 
-      username: username // Use this instead of discordUsername
-    });
+    let member = await Member.findOne({ username: username });
     console.log('Member found:', member);
 
     if (!member) {
@@ -71,7 +69,7 @@ app.post('/api/login', async (req, res) => {
     res.status(200).json({ 
       message: 'Login successful', 
       redirectUrl: '/dashboard',
-      username: req.user.username // Add this line
+      username: req.user ? req.user.username : null // Add this line
     });
 
   } catch (error) {
