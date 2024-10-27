@@ -210,7 +210,6 @@ app.get('/forms/training', (req, res) => {
 app.post('/forms/training', async (req, res) => {
   const { trainerUsername, xpAward, attendees } = req.body;
 
-  // Log the entire request body for debugging
   console.log('Request body:', req.body);
 
   if (!trainerUsername && (!attendees || attendees.length === 0)) {
@@ -219,12 +218,18 @@ app.post('/forms/training', async (req, res) => {
   }
 
   try {
+    // Array to hold all members updated
+    const updatedMembers = [];
+
     // Update XP for the trainer
     if (trainerUsername) {
-      const trainer = await Member.findOne({ username: trainerUsername.trim() });
+      const trainer = await Member.findOneAndUpdate(
+        { username: trainerUsername.trim() },
+        { $inc: { xp: xpAward } }, // Increment XP
+        { new: true, upsert: true } // Create if not exists
+      );
       if (trainer) {
-        trainer.xp += xpAward;
-        await trainer.save();
+        updatedMembers.push(trainerUsername);
         console.log(`XP updated for trainer: ${trainerUsername}`);
       } else {
         console.log(`Trainer not found for username: ${trainerUsername}`);
@@ -234,10 +239,13 @@ app.post('/forms/training', async (req, res) => {
     // Update XP for each attendee
     if (attendees && attendees.length > 0) {
       for (const attendeeUsername of attendees) {
-        const attendee = await Member.findOne({ username: attendeeUsername.trim() });
+        const attendee = await Member.findOneAndUpdate(
+          { username: attendeeUsername.trim() },
+          { $inc: { xp: xpAward } }, // Increment XP
+          { new: true, upsert: true } // Create if not exists
+        );
         if (attendee) {
-          attendee.xp += xpAward;
-          await attendee.save();
+          updatedMembers.push(attendeeUsername);
           console.log(`XP updated for attendee: ${attendeeUsername}`);
         } else {
           console.log(`Attendee not found for username: ${attendeeUsername}`);
@@ -245,7 +253,16 @@ app.post('/forms/training', async (req, res) => {
       }
     }
 
-    res.status(200).json({ success: true, message: 'XP updated successfully' });
+    // Log the training session
+    const trainingLog = new Training({
+      trainer: trainerUsername,
+      attendees: attendees,
+      action: 'Training Session',
+      xpAwarded: xpAward
+    });
+    await trainingLog.save();
+
+    res.status(200).json({ success: true, message: 'XP updated and training logged successfully', updatedMembers });
   } catch (error) {
     console.error('Error updating XP:', error);
     res.status(500).json({ success: false, message: 'Server error' });
