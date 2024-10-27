@@ -36,9 +36,13 @@ mongoose.connect(process.env.MONGO_URI, {
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
 
-// Handle all routes by serving index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Set view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Render the index page
+app.get('/', (req, res) => {
+  res.render('index'); // Render the EJS template
 });
 
 app.post('/api/login', async (req, res) => {
@@ -90,16 +94,12 @@ app.get('/status', (req, res) => {
   res.json({ status: 'ready' });
 });
 
-// Set view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
 // Dashboard route
 app.get('/dashboard', (req, res) => {
   console.log(`Accessing dashboard, user authenticated: ${req.session.user ? 'Yes' : 'No'}`);
   if (!req.session.user) {
     console.log('User not authenticated, redirecting to login');
-    return res.redirect('/login');
+    return res.redirect('/');
   }
   res.render('dashboard', { username: req.session.user.username });
 });
@@ -135,14 +135,6 @@ async function findUser(username, password) {
     return null;
   }
 }
-
-// Serve static files
-app.use(express.static('public'));
-
-// Render the index page
-app.get('/', (req, res) => {
-  res.render('index');
-});
 
 // Start server
 app.listen(PORT, () => {
