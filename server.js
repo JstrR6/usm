@@ -210,7 +210,7 @@ app.post('/forms/training', async (req, res) => {
   const { discordId, xpChange } = req.body;
 
   try {
-    const member = await Member.findOne({ discordId: discordId });
+    const member = await Member.findOne({ username: username }); // Change to search by username
     if (!member) {
       return res.status(404).json({ success: false, message: 'Member not found' });
     }
@@ -220,11 +220,10 @@ app.post('/forms/training', async (req, res) => {
     await member.save();
 
     res.status(200).json({ success: true, message: 'XP updated successfully', xp: member.xp });
-  } catch (error) {
+} catch (error) {
     console.error('Error updating XP:', error);
     res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
+}
 
 // Validate trainer's role
 app.post('/api/validate-trainer', async (req, res) => {
