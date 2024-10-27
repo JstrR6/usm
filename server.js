@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
 const passport = require('passport');
-const { getRoleNameById } = require('./roleManager'); // Import the function
+const { getRoleNamesByIds } = require('./roleManager'); // Import the function
 const { v4: uuidv4 } = require('uuid'); // Use UUID for unique training IDs
 
 const app = express();
@@ -173,7 +173,7 @@ async function findUser(username, password) {
 
 // Function to get the highest role name
 function getHighestRoleName(user) {
-  return getRoleNameById(user.highestRole) || 'No role assigned';
+  return getRoleNamesByIds(user.roles) || 'No role assigned';
 }
 
 // API endpoint to update XP
@@ -231,11 +231,14 @@ app.post('/api/validate-trainer', async (req, res) => {
   const { username } = req.body;
   try {
     const member = await Member.findOne({ username: username });
-    if (member && member.roles.includes('Drill Instructor')) {
-      res.json({ isValid: true });
-    } else {
-      res.json({ isValid: false });
+    if (member) {
+      const roleNames = await getRoleNamesByIds(member.roles);
+      console.log(`Roles for ${username}:`, roleNames); // Log role names for debugging
+      if (roleNames.includes('Drill Instructor')) {
+        return res.json({ isValid: true });
+      }
     }
+    res.json({ isValid: false });
   } catch (error) {
     console.error('Error validating trainer:', error);
     res.status(500).json({ isValid: false });
@@ -247,7 +250,12 @@ app.post('/forms/training', async (req, res) => {
   const { trainerUsername, trainingType, xpAward, attendees } = req.body;
   try {
     const trainer = await Member.findOne({ username: trainerUsername });
-    if (!trainer || !trainer.roles.includes('Drill Instructor')) {
+    if (!trainer) {
+      return res.status(400).json({ success: false, message: 'Trainer not found' });
+    }
+
+    const roleNames = await getRoleNamesByIds(trainer.roles);
+    if (!roleNames.includes('Drill Instructor')) {
       return res.status(400).json({ success: false, message: 'Drill Instructor\'s Only' });
     }
 
