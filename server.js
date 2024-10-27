@@ -24,7 +24,7 @@ app.use(session({
 
 // Parse JSON bodies
 app.use(bodyParser.json());
-app.use(express.json());
+app.use(express.json()); // Ensure this middleware is set up to parse JSON bodies
 
 // Parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -208,13 +208,19 @@ app.get('/forms/training', (req, res) => {
 
 // API endpoint to update XP via Training Form
 app.post('/forms/training', async (req, res) => {
-  const { username, xpChange } = req.body; // Use username instead of discordId
+  const { username, xpChange } = req.body;
 
-  console.log(`Received training form submission for username: ${username}`);
+  // Log the entire request body for debugging
+  console.log('Request body:', req.body);
+
+  if (!username) {
+    console.error('Username is missing in the request body');
+    return res.status(400).json({ success: false, message: 'Username is required' });
+  }
 
   try {
     // Find the member using the username
-    const member = await Member.findOne({ username: username.trim() }); // Trim whitespace
+    const member = await Member.findOne({ username: username.trim() });
     if (!member) {
       console.log(`Member not found for username: ${username}`);
       return res.status(404).json({ success: false, message: 'Member not found' });
