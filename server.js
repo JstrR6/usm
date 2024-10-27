@@ -255,15 +255,30 @@ app.post('/forms/training', async (req, res) => {
       }
     }
 
-    // Log the training session
-    const trainingLog = new Training({
-      trainingId: new mongoose.Types.ObjectId().toString(), // Generate a unique ID
-      trainerId: trainerId, // Ensure this is set
-      attendees: attendees,
-      trainingType: trainingType, // Ensure this is set
-      xpAward: xpAward // Ensure this is set
-    });
-    await trainingLog.save();
+    // Determine where to log the training session
+    if (xpAward >= 10) {
+      // Log to PendingApproval
+      const pendingApprovalLog = new PendingApproval({
+        trainingId: new mongoose.Types.ObjectId().toString(), // Generate a unique ID
+        trainerId: trainerId, // Ensure this is set
+        attendees: attendees,
+        trainingType: trainingType, // Ensure this is set
+        xpAward: xpAward // Ensure this is set
+      });
+      await pendingApprovalLog.save();
+      console.log('Training session logged to PendingApproval');
+    } else {
+      // Log to Training
+      const trainingLog = new Training({
+        trainingId: new mongoose.Types.ObjectId().toString(), // Generate a unique ID
+        trainerId: trainerId, // Ensure this is set
+        attendees: attendees,
+        trainingType: trainingType, // Ensure this is set
+        xpAward: xpAward // Ensure this is set
+      });
+      await trainingLog.save();
+      console.log('Training session logged to Training');
+    }
 
     res.status(200).json({ success: true, message: 'XP updated and training logged successfully', updatedMembers });
   } catch (error) {
