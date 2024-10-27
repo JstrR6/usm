@@ -33,41 +33,33 @@ app.get('*', (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-  console.log('Request body:', req.body);
   const { username, password } = req.body;
-  console.log('Attempting login for username:', username);
 
   try {
-    // Find all documents that have a username field
-    const allMembers = await Member.find({ username: { $exists: true } }, 'username');
-    console.log('All usernames in database:', allMembers.map(m => m.username));
-
     let member = await Member.findOne({ username: username });
-    console.log('Member found:', member);
 
     if (!member) {
       return res.status(400).json({ message: 'Member not found' });
     }
 
     if (!member.password) {
-      // New member, set password
       const salt = await bcrypt.genSalt(10);
       member.password = await bcrypt.hash(password, salt);
       await member.save();
       return res.status(200).json({ message: 'Password set successfully. Please login again.' });
     }
 
-    // Existing member, check password
     const isMatch = await bcrypt.compare(password, member.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Login successful
+    // Set session or token here
+    req.session.user = member; // Example using session
+
     res.status(200).json({ 
       message: 'Login successful', 
-      redirectUrl: '/dashboard',
-      username: req.user ? req.user.username : null
+      redirectUrl: '/dashboard'
     });
 
   } catch (error) {
@@ -81,12 +73,10 @@ app.get('/status', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  // Check if user is authenticated
-  if (!req.user) {
+  if (!req.session.user) { // Check if user is authenticated
     return res.redirect('/login');
   }
-  // Render the dashboard
-  res.render('dashboard', { user: req.user });
+  res.render('dashboard', { username: req.session.user.username });
 });
 
 app.post('/login', async (req, res) => {
