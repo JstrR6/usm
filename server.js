@@ -51,7 +51,7 @@ app.post('/api/login', async (req, res) => {
 
     if (!member) {
       console.log('Member not found');
-      return res.status(400).json({ message: 'Member not found' });
+      return res.status(400).json({ success: false, message: 'Member not found' });
     }
 
     if (!member.password) {
@@ -59,7 +59,7 @@ app.post('/api/login', async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       member.password = await bcrypt.hash(password, salt);
       await member.save();
-      return res.status(200).json({ message: 'Password set successfully. Please login again.' });
+      return res.status(200).json({ success: false, message: 'Password set successfully. Please login again.' });
     }
 
     const isMatch = await bcrypt.compare(password, member.password);
@@ -67,7 +67,7 @@ app.post('/api/login', async (req, res) => {
 
     if (!isMatch) {
       console.log('Invalid credentials');
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ success: false, message: 'Invalid credentials' });
     }
 
     // Set session or token here
@@ -75,13 +75,14 @@ app.post('/api/login', async (req, res) => {
     console.log(`Session set for user: ${req.session.user.username}`);
 
     res.status(200).json({ 
+      success: true, 
       message: 'Login successful', 
       redirectUrl: '/dashboard'
     });
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
