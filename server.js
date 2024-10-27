@@ -97,19 +97,38 @@ app.get('/status', (req, res) => {
 
 // Dashboard route
 app.get('/dashboard', (req, res) => {
-  console.log(`Accessing dashboard, user authenticated: ${req.session.user ? 'Yes' : 'No'}`);
   if (!req.session.user) {
-    console.log('User not authenticated, redirecting to login');
     return res.redirect('/');
   }
+  res.render('dashboard', { username: req.session.user.username, highestRoleName: getRoleNameById(req.session.user.highestRole) });
+});
 
-  // Fetch the highest role name using roleManager.js
-  const highestRoleName = getRoleNameById(req.session.user.highestRole) || 'No role assigned';
+app.get('/forms', (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/');
+  }
+  res.render('forms', { username: req.session.user.username });
+});
 
-  res.render('dashboard', { 
-    username: req.session.user.username,
-    highestRoleName: highestRoleName
-  });
+app.get('/orders', (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/');
+  }
+  res.render('orders', { username: req.session.user.username });
+});
+
+app.get('/orbat', (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/');
+  }
+  res.render('orbat', { username: req.session.user.username });
+});
+
+app.get('/profile', (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/');
+  }
+  res.render('profile', { username: req.session.user.username });
 });
 
 app.post('/login', async (req, res) => {
