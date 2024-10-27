@@ -173,9 +173,9 @@ async function findUser(username, password) {
 
 // Function to get the highest role name
 async function displayUserRole(user) {
-    const highestRole = await getHighestRoleName(user);
-    console.log(`Highest role for user ${user.username}: ${highestRole}`);
-  }
+  const highestRole = await getHighestRoleName(user);
+  console.log(`Highest role for user ${user.username}: ${highestRole}`);
+}
 
 // API endpoint to update XP
 app.post('/api/update-xp', async (req, res) => {
@@ -221,10 +221,11 @@ app.post('/forms/training', async (req, res) => {
     await member.save();
 
     res.status(200).json({ success: true, message: 'XP updated successfully', xp: member.xp });
-} catch (error) {
+  } catch (error) {
     console.error('Error updating XP:', error);
     res.status(500).json({ success: false, message: 'Server error' });
-}
+  } // Add this closing brace
+});
 
 // Validate trainer's role
 app.post('/api/validate-trainer', async (req, res) => {
@@ -322,8 +323,3 @@ app.post('/forms/training', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
-async function displayUserRole(user) {
-  const highestRole = await getHighestRoleName(user);
-  console.log(`Highest role for user ${user.username}: ${highestRole}`);
-}
