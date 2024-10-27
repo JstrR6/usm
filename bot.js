@@ -52,6 +52,9 @@ async function fetchAndUpdateMembers() {
       // If the member exists and has an xp field, don't overwrite it
       if (existingMember && existingMember.xp !== undefined) {
         updateData.xp = existingMember.xp;
+      } else {
+        // Initialize xp if it doesn't exist
+        updateData.xp = 0;
       }
 
       const result = await Member.findOneAndUpdate(
