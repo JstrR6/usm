@@ -90,9 +90,14 @@ app.get('/status', (req, res) => {
   res.json({ status: 'ready' });
 });
 
+// Set view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Dashboard route
 app.get('/dashboard', (req, res) => {
   console.log(`Accessing dashboard, user authenticated: ${req.session.user ? 'Yes' : 'No'}`);
-  if (!req.session.user) { // Check if user is authenticated
+  if (!req.session.user) {
     console.log('User not authenticated, redirecting to login');
     return res.redirect('/login');
   }
@@ -130,9 +135,6 @@ async function findUser(username, password) {
     return null;
   }
 }
-
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
