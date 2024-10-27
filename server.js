@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
 const passport = require('passport');
-const { getRoleNamesByIds } = require('./roleManager'); // Import the function
+const { getRoleNamesByIds, getHighestRoleName } = require('./roleManager'); // Import the function
 const { v4: uuidv4 } = require('uuid'); // Use UUID for unique training IDs
 
 const app = express();
@@ -103,7 +103,7 @@ app.get('/dashboard', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  const highestRoleName = getHighestRoleName(req.session.user);
+  const highestRoleName = getHighestRoleName(req.session.user.roles); // Pass the user's roles
   res.render('dashboard', { username: req.session.user.username, highestRoleName });
 });
 
@@ -111,7 +111,7 @@ app.get('/forms', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  const highestRoleName = getHighestRoleName(req.session.user);
+  const highestRoleName = getHighestRoleName(req.session.user.roles); // Pass the user's roles
   res.render('forms', { username: req.session.user.username, highestRoleName });
 });
 
@@ -119,7 +119,7 @@ app.get('/orders', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  const highestRoleName = getHighestRoleName(req.session.user);
+  const highestRoleName = getHighestRoleName(req.session.user.roles); // Pass the user's roles
   res.render('orders', { username: req.session.user.username, highestRoleName });
 });
 
@@ -127,7 +127,7 @@ app.get('/orbat', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  const highestRoleName = getHighestRoleName(req.session.user);
+  const highestRoleName = getHighestRoleName(req.session.user.roles); // Pass the user's roles
   res.render('orbat', { username: req.session.user.username, highestRoleName });
 });
 
@@ -135,7 +135,7 @@ app.get('/profile', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  const highestRoleName = getHighestRoleName(req.session.user);
+  const highestRoleName = getHighestRoleName(req.session.user.roles); // Pass the user's roles
   res.render('profile', { username: req.session.user.username, highestRoleName });
 });
 

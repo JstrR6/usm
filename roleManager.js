@@ -44,9 +44,25 @@ async function getRoleNamesByIds(roleIds) {
     return roleIds.map(roleId => roleMap.get(roleId) || 'Role not found');
 }
 
+// Function to get the highest role name from a list of role IDs
+function getHighestRoleName(roleIds) {
+    // Assuming roles are ordered by hierarchy, you can sort them or use a predefined order
+    const sortedRoles = roleIds
+        .map(roleId => ({ id: roleId, name: roleMap.get(roleId) || 'Role not found' }))
+        .sort((a, b) => {
+            // Define your sorting logic here, e.g., based on a predefined hierarchy
+            // For simplicity, let's assume the roleMap keys are ordered by hierarchy
+            return roleMap.get(a.id) < roleMap.get(b.id) ? -1 : 1;
+        });
+
+    // Return the name of the highest role
+    return sortedRoles.length > 0 ? sortedRoles[0].name : 'No roles found';
+}
+
 // Export functions for use in other scripts
 module.exports = {
-    getRoleNamesByIds
+    getRoleNamesByIds,
+    getHighestRoleName // Export the new function
 };
 
 // Log in to Discord using the token from Render.com
