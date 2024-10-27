@@ -234,7 +234,7 @@ app.post('/api/validate-trainer', async (req, res) => {
     const member = await Member.findOne({ username: username });
     if (member) {
       console.log(`Found member: ${member.username}, Roles: ${member.roles}`);
-      const roleNames = await getRoleNamesByIds(member.roles);
+      const roleNames = await getRoleNamesByIds(member.roles); // Ensure this is awaited
       console.log(`Role names for ${username}:`, roleNames);
       if (roleNames.includes('Drill Instructor')) {
         console.log(`Validation successful for ${username}`);
@@ -260,7 +260,7 @@ app.post('/forms/training', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Trainer not found' });
     }
 
-    const roleNames = await getRoleNamesByIds(trainer.roles);
+    const roleNames = await getRoleNamesByIds(trainer.roles); // Ensure this is awaited
     console.log(`Role names for ${trainerUsername}:`, roleNames);
     if (!roleNames.includes('Drill Instructor')) {
       console.log(`Access denied for ${trainerUsername}: Not a Drill Instructor`);
