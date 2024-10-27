@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <% include ./partials/styles.ejs %>
+    <% include('partials/styles') %>
 </head>
 <body>
-    <% include ./partials/sidebar.ejs %>
+    <% include('partials/sidebar') %>
     <div class="main-content">
         <div class="header">
             <h1>Welcome, <%= username %>!</h1>
