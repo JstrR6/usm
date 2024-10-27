@@ -80,13 +80,12 @@ app.get('/status', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  // Check if user is authenticated
-  if (!req.user) {
-    return res.redirect('/login');
+  if (!req.session.user) {
+    return res.redirect('/');
   }
-  // Render the dashboard
-  res.render('dashboard', { user: req.user });
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.ejs'));
 });
+
 
 app.post('/login', (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
