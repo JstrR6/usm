@@ -42,7 +42,7 @@ app.post('/api/login', async (req, res) => {
     console.log('All usernames in database:', allMembers.map(m => m.username));
 
     let member = await Member.findOne({ 
-      username: username // Direct match with the tag
+      username: username // Use this instead of discordUsername
     });
     console.log('Member found:', member);
 
