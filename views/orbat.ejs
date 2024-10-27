@@ -5,10 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ORBAT</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <% include ./partials/styles.ejs %>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #333;
+            color: white;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .sidebar h2 {
+            margin-top: 0;
+        }
+        .sidebar-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #444;
+            color: white;
+            text-align: left;
+            border: none;
+            cursor: pointer;
+        }
+        .sidebar-btn:hover {
+            background-color: #555;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f4f4f4;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .content {
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <% include ./partials/sidebar.ejs %>
+    <div class="sidebar">
+        <h2>Dashboard</h2>
+        <button class="sidebar-btn" onclick="location.href='/dashboard'"><i class="fas fa-home"></i> Home</button>
+        <button class="sidebar-btn" onclick="location.href='/forms'"><i class="fas fa-file-alt"></i> Forms</button>
+        <button class="sidebar-btn" onclick="location.href='/orders'"><i class="fas fa-shopping-cart"></i> Orders</button>
+        <button class="sidebar-btn" onclick="location.href='/orbat'"><i class="fas fa-users"></i> ORBAT</button>
+        <button class="sidebar-btn" onclick="location.href='/profile'"><i class="fas fa-user"></i> Profile</button>
+    </div>
     <div class="main-content">
         <div class="header">
             <h1>Welcome, <%= username %>!</h1>
