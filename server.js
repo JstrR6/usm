@@ -63,13 +63,10 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Login successful
-    // Here you would typically create a session or JWT token
-    // For this example, we'll just send a redirect URL
+    // Login successful, respond with redirect URL
     res.status(200).json({ 
       message: 'Login successful', 
-      redirectUrl: '/dashboard',
-      username: req.user ? req.user.username : null // Add this line
+      redirectUrl: '/dashboard'
     });
 
   } catch (error) {
