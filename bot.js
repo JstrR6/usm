@@ -54,8 +54,6 @@ async function fetchAndUpdateMembers() {
 
       // Ensure XP field is initialized
       await Member.updateXpField(memberId, guildId, 0);
-
-      console.log(`Member ${member.user.username} updated/inserted:`, result);
     }
 
     console.log('All members have been updated in the database.');
