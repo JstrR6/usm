@@ -37,17 +37,13 @@ async function fetchAndUpdateMembers() {
 
     // Iterate over each member and update or insert them into the database
     for (const [memberId, member] of members) {
-      const existingMember = await Member.findOne({ discordId: memberId, guildId: guildId });
-
-      // Prepare the update object
       const updateData = {
         discordId: memberId,
         guildId: guildId,
         username: member.user.username,
         joinedAt: member.joinedAt,
         roles: member.roles.cache.map(role => role.id),
-        highestRole: member.roles.highest.name,
-        xp: existingMember && existingMember.xp !== undefined ? existingMember.xp : 0 // Set xp to existing value or initialize to 0
+        highestRole: member.roles.highest.name
       };
 
       const result = await Member.findOneAndUpdate(
@@ -55,6 +51,9 @@ async function fetchAndUpdateMembers() {
         updateData,
         { upsert: true, setDefaultsOnInsert: true, new: true }
       );
+
+      // Ensure XP field is initialized
+      await Member.updateXpField(memberId, guildId, 0);
 
       console.log(`Member ${member.user.username} updated/inserted:`, result);
     }

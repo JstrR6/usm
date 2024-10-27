@@ -182,14 +182,10 @@ app.post('/api/update-xp', async (req, res) => {
   const { discordId, xpChange } = req.body;
 
   try {
-    const member = await Member.findOne({ discordId: discordId });
+    const member = await Member.updateXpField(discordId, req.body.guildId, xpChange);
     if (!member) {
       return res.status(404).json({ success: false, message: 'Member not found' });
     }
-
-    // Update the XP
-    member.xp += xpChange;
-    await member.save();
 
     res.status(200).json({ success: true, message: 'XP updated successfully', xp: member.xp });
   } catch (error) {
