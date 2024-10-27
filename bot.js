@@ -46,16 +46,9 @@ async function fetchAndUpdateMembers() {
         username: member.user.username,
         joinedAt: member.joinedAt,
         roles: member.roles.cache.map(role => role.id),
-        highestRole: member.roles.highest.name
+        highestRole: member.roles.highest.name,
+        xp: existingMember && existingMember.xp !== undefined ? existingMember.xp : 0 // Set xp to existing value or initialize to 0
       };
-
-      // If the member exists and has an xp field, don't overwrite it
-      if (existingMember && existingMember.xp !== undefined) {
-        updateData.xp = existingMember.xp;
-      } else {
-        // Initialize xp if it doesn't exist
-        updateData.xp = 0;
-      }
 
       const result = await Member.findOneAndUpdate(
         { discordId: memberId, guildId: guildId },
