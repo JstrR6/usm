@@ -12,6 +12,9 @@ const MemberSchema = new mongoose.Schema({
   username: {
     type: String
   },
+  password: {
+    type: String // Add the password field
+  },
   joinedAt: Date,
   roles: [String],
   highestRole: String,

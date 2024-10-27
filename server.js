@@ -66,7 +66,8 @@ app.post('/api/login', async (req, res) => {
       console.log('Setting password for the first time');
       const salt = await bcrypt.genSalt(10);
       member.password = await bcrypt.hash(password, salt);
-      await member.save();
+      await member.save(); // Ensure the password is saved to the database
+      console.log('Password set successfully in the database');
       return res.status(200).json({ success: false, message: 'Password set successfully. Please login again.' });
     }
 
