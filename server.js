@@ -100,35 +100,40 @@ app.get('/dashboard', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  res.render('dashboard', { username: req.session.user.username, highestRoleName: getRoleNameById(req.session.user.highestRole) });
+  const highestRoleName = getHighestRoleName(req.session.user);
+  res.render('dashboard', { username: req.session.user.username, highestRoleName });
 });
 
 app.get('/forms', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  res.render('forms', { username: req.session.user.username });
+  const highestRoleName = getHighestRoleName(req.session.user);
+  res.render('forms', { username: req.session.user.username, highestRoleName });
 });
 
 app.get('/orders', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  res.render('orders', { username: req.session.user.username });
+  const highestRoleName = getHighestRoleName(req.session.user);
+  res.render('orders', { username: req.session.user.username, highestRoleName });
 });
 
 app.get('/orbat', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  res.render('orbat', { username: req.session.user.username });
+  const highestRoleName = getHighestRoleName(req.session.user);
+  res.render('orbat', { username: req.session.user.username, highestRoleName });
 });
 
 app.get('/profile', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  res.render('profile', { username: req.session.user.username });
+  const highestRoleName = getHighestRoleName(req.session.user);
+  res.render('profile', { username: req.session.user.username, highestRoleName });
 });
 
 app.post('/login', async (req, res) => {
@@ -161,6 +166,11 @@ async function findUser(username, password) {
     console.error('Error finding user:', error);
     return null;
   }
+}
+
+// Function to get the highest role name
+function getHighestRoleName(user) {
+  return getRoleNameById(user.highestRole) || 'No role assigned';
 }
 
 // Start server
