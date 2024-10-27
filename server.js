@@ -229,15 +229,19 @@ app.post('/forms/training', async (req, res) => {
 // Validate trainer's role
 app.post('/api/validate-trainer', async (req, res) => {
   const { username } = req.body;
+  console.log(`Received request to validate trainer: ${username}`);
   try {
     const member = await Member.findOne({ username: username });
     if (member) {
+      console.log(`Found member: ${member.username}, Roles: ${member.roles}`);
       const roleNames = await getRoleNamesByIds(member.roles);
-      console.log(`Roles for ${username}:`, roleNames); // Log role names for debugging
+      console.log(`Role names for ${username}:`, roleNames);
       if (roleNames.includes('Drill Instructor')) {
+        console.log(`Validation successful for ${username}`);
         return res.json({ isValid: true });
       }
     }
+    console.log(`Validation failed for ${username}`);
     res.json({ isValid: false });
   } catch (error) {
     console.error('Error validating trainer:', error);
@@ -248,18 +252,22 @@ app.post('/api/validate-trainer', async (req, res) => {
 // Handle training form submission
 app.post('/forms/training', async (req, res) => {
   const { trainerUsername, trainingType, xpAward, attendees } = req.body;
+  console.log(`Received training form submission from ${trainerUsername}`);
   try {
     const trainer = await Member.findOne({ username: trainerUsername });
     if (!trainer) {
+      console.log(`Trainer not found: ${trainerUsername}`);
       return res.status(400).json({ success: false, message: 'Trainer not found' });
     }
 
     const roleNames = await getRoleNamesByIds(trainer.roles);
+    console.log(`Role names for ${trainerUsername}:`, roleNames);
     if (!roleNames.includes('Drill Instructor')) {
+      console.log(`Access denied for ${trainerUsername}: Not a Drill Instructor`);
       return res.status(400).json({ success: false, message: 'Drill Instructor\'s Only' });
     }
 
-    // Check for frequent submissions
+    console.log(`Trainer ${trainerUsername} is authorized. Processing training session...`);
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     const recentSessions = await Training.find({
       attendees: { $in: attendees },
@@ -270,7 +278,7 @@ app.post('/forms/training', async (req, res) => {
     const trainingId = uuidv4(); // Generate a unique training ID
 
     if (needsApproval) {
-      // Log the session in PendingApproval
+      console.log(`Training session needs approval. Logging to PendingApproval.`);
       const pendingSession = new PendingApproval({
         trainingId,
         trainerId: trainer.discordId,
@@ -283,7 +291,7 @@ app.post('/forms/training', async (req, res) => {
       return res.status(200).json({ success: true, message: 'Training session logged for approval.' });
     }
 
-    // Create a new training session
+    console.log(`Recording training session for ${trainerUsername}.`);
     const trainingSession = new Training({
       trainingId,
       trainerId: trainer.discordId,
@@ -293,12 +301,13 @@ app.post('/forms/training', async (req, res) => {
     });
     await trainingSession.save();
 
-    // Update XP for each attendee
+    console.log(`Updating XP for attendees: ${attendees.join(', ')}`);
     for (const attendeeUsername of attendees) {
       const attendee = await Member.findOne({ username: attendeeUsername });
       if (attendee) {
         attendee.xp += xpAward;
         await attendee.save();
+        console.log(`Updated XP for ${attendeeUsername}: New XP = ${attendee.xp}`);
       }
     }
 
