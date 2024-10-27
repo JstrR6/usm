@@ -62,7 +62,9 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
-            fetch('/login', {
+            console.log(`Submitting login for username: ${username}`);
+
+            fetch('/api/login', { // Ensure this matches the server route
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -71,9 +73,12 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Response received:', data);
                 if (data.success) {
-                    window.location.href = data.redirectUrl;
+                    console.log('Login successful, redirecting to dashboard');
+                    window.location.href = data.redirectUrl; // Redirect to the dashboard
                 } else {
+                    console.log('Login failed:', data.message);
                     alert('Login failed: ' + data.message);
                 }
             })

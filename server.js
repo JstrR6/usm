@@ -34,15 +34,19 @@ app.get('*', (req, res) => {
 
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log(`Login attempt for username: ${username}`);
 
   try {
     let member = await Member.findOne({ username: username });
+    console.log(`Member found: ${member ? 'Yes' : 'No'}`);
 
     if (!member) {
+      console.log('Member not found');
       return res.status(400).json({ message: 'Member not found' });
     }
 
     if (!member.password) {
+      console.log('Setting password for the first time');
       const salt = await bcrypt.genSalt(10);
       member.password = await bcrypt.hash(password, salt);
       await member.save();
@@ -50,12 +54,16 @@ app.post('/api/login', async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, member.password);
+    console.log(`Password match: ${isMatch}`);
+
     if (!isMatch) {
+      console.log('Invalid credentials');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Set session or token here
     req.session.user = member; // Example using session
+    console.log(`Session set for user: ${req.session.user.username}`);
 
     res.status(200).json({ 
       message: 'Login successful', 
@@ -73,7 +81,9 @@ app.get('/status', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
+  console.log(`Accessing dashboard, user authenticated: ${req.session.user ? 'Yes' : 'No'}`);
   if (!req.session.user) { // Check if user is authenticated
+    console.log('User not authenticated, redirecting to login');
     return res.redirect('/login');
   }
   res.render('dashboard', { username: req.session.user.username });
