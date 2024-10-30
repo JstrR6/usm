@@ -20,6 +20,8 @@
             margin: 10px;
             width: 300px;
             position: absolute;
+            background-color: #f9f9f9;
+            cursor: move;
         }
         .box-title {
             font-size: 1.5em;
@@ -36,6 +38,10 @@
             cursor: pointer;
             color: blue;
         }
+        input[type="text"] {
+            width: 100px;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -45,6 +51,8 @@
 
     <script>
         let boxes = [];
+        let draggedElement = null;
+        let offsetX, offsetY;
 
         function loadOrbat() {
             fetch('/api/orbat')
@@ -63,6 +71,19 @@
                 boxDiv.className = 'box';
                 boxDiv.style.left = `${box.position.x}px`;
                 boxDiv.style.top = `${box.position.y}px`;
+                boxDiv.draggable = true;
+
+                boxDiv.addEventListener('dragstart', (e) => {
+                    draggedElement = boxDiv;
+                    offsetX = e.offsetX;
+                    offsetY = e.offsetY;
+                });
+
+                boxDiv.addEventListener('dragend', (e) => {
+                    box.position.x = e.pageX - offsetX;
+                    box.position.y = e.pageY - offsetY;
+                    saveOrbat();
+                });
 
                 const title = document.createElement('div');
                 title.className = 'box-title';
@@ -73,16 +94,33 @@
                     const rankDiv = document.createElement('div');
                     rankDiv.className = 'rank';
 
-                    const rankTitle = document.createElement('span');
-                    rankTitle.className = 'rank-title';
-                    rankTitle.textContent = rank.title;
-                    rankDiv.appendChild(rankTitle);
+                    const rankTitleInput = document.createElement('input');
+                    rankTitleInput.type = 'text';
+                    rankTitleInput.value = rank.title;
+                    rankTitleInput.onchange = () => {
+                        rank.title = rankTitleInput.value;
+                        saveOrbat();
+                    };
+                    rankDiv.appendChild(rankTitleInput);
 
-                    rank.usernames.forEach(username => {
-                        const usernameSpan = document.createElement('span');
-                        usernameSpan.textContent = ` ${username}`;
-                        rankDiv.appendChild(usernameSpan);
+                    rank.usernames.forEach((username, usernameIndex) => {
+                        const usernameInput = document.createElement('input');
+                        usernameInput.type = 'text';
+                        usernameInput.value = username;
+                        usernameInput.onchange = () => {
+                            rank.usernames[usernameIndex] = usernameInput.value;
+                            saveOrbat();
+                        };
+                        rankDiv.appendChild(usernameInput);
                     });
+
+                    const addUsernameBtn = document.createElement('button');
+                    addUsernameBtn.textContent = '+';
+                    addUsernameBtn.onclick = () => {
+                        rank.usernames.push('');
+                        renderOrbat();
+                    };
+                    rankDiv.appendChild(addUsernameBtn);
 
                     boxDiv.appendChild(rankDiv);
                 });
@@ -90,7 +128,9 @@
                 const addRankBtn = document.createElement('button');
                 addRankBtn.className = 'add-rank';
                 addRankBtn.textContent = 'Add Rank';
-                addRankBtn.onclick = () => addRank(boxIndex);
+                addRankBtn.onclick = () => {
+                    addRank(boxIndex);
+                };
                 boxDiv.appendChild(addRankBtn);
 
                 container.appendChild(boxDiv);
@@ -105,15 +145,17 @@
             };
             boxes.push(newBox);
             renderOrbat();
+            saveOrbat();
         }
 
         function addRank(boxIndex) {
             const newRank = {
                 title: `Rank ${boxes[boxIndex].ranks.length + 1}`,
-                usernames: []
+                usernames: ['']
             };
             boxes[boxIndex].ranks.push(newRank);
             renderOrbat();
+            saveOrbat();
         }
 
         function saveOrbat() {
@@ -127,7 +169,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Orbat saved successfully');
+                    console.log('Orbat saved successfully');
                 }
             });
         }
