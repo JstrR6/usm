@@ -10,6 +10,7 @@ const session = require('express-session');
 const passport = require('passport');
 const { getRoleNamesByIds, getHighestRoleName } = require('./roleManager'); // Import the function
 const { v4: uuidv4 } = require('uuid'); // Use UUID for unique training IDs
+const Orbat = require('./models/Orbat'); // Import the Orbat model
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -372,6 +373,36 @@ app.post('/forms/training', async (req, res) => {
     res.status(200).json({ success: true, message: 'Training session recorded and XP updated.' });
   } catch (error) {
     console.error('Error handling training form:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Load Orbat data
+app.get('/api/orbat', async (req, res) => {
+  try {
+    const orbat = await Orbat.findOne(); // Assuming a single Orbat document
+    res.json(orbat || { boxes: [] });
+  } catch (error) {
+    console.error('Error loading Orbat:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Save Orbat data
+app.post('/api/orbat', async (req, res) => {
+  const { boxes } = req.body;
+
+  try {
+    let orbat = await Orbat.findOne();
+    if (!orbat) {
+      orbat = new Orbat({ boxes });
+    } else {
+      orbat.boxes = boxes;
+    }
+    await orbat.save();
+    res.status(200).json({ success: true, message: 'Orbat saved successfully' });
+  } catch (error) {
+    console.error('Error saving Orbat:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

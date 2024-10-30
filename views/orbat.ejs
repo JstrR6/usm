@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORBAT</title>
+    <title>Order of Battle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
@@ -11,66 +11,128 @@
             margin: 0;
             padding: 0;
             display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .sidebar {
-            width: 200px;
-            background-color: #333;
-            color: white;
-            height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .sidebar h2 {
-            margin-top: 0;
-        }
-        .sidebar-btn {
-            display: block;
-            width: 100%;
+        .box {
+            border: 1px solid #333;
             padding: 10px;
-            margin: 5px 0;
-            background-color: #444;
-            color: white;
-            text-align: left;
-            border: none;
+            margin: 10px;
+            width: 300px;
+            position: absolute;
+        }
+        .box-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .rank {
+            margin-bottom: 5px;
+        }
+        .rank-title {
+            font-weight: bold;
+        }
+        .add-box, .add-rank {
+            margin: 10px;
             cursor: pointer;
-        }
-        .sidebar-btn:hover {
-            background-color: #555;
-        }
-        .main-content {
-            flex-grow: 1;
-            padding: 20px;
-        }
-        .header {
-            background-color: #f4f4f4;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-        .content {
-            padding: 10px;
+            color: blue;
         }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h2>Dashboard</h2>
-        <button class="sidebar-btn" onclick="location.href='/dashboard'"><i class="fas fa-home"></i> Home</button>
-        <button class="sidebar-btn" onclick="location.href='/forms'"><i class="fas fa-file-alt"></i> Forms</button>
-        <button class="sidebar-btn" onclick="location.href='/orders'"><i class="fas fa-shopping-cart"></i> Orders</button>
-        <button class="sidebar-btn" onclick="location.href='/orbat'"><i class="fas fa-users"></i> ORBAT</button>
-        <button class="sidebar-btn" onclick="location.href='/profile'"><i class="fas fa-user"></i> Profile</button>
-    </div>
-    <div class="main-content">
-        <div class="header">
-            <h1>Welcome, <%= username %>!</h1>
-        </div>
-        <div class="content">
-            <h2>ORBAT</h2>
-            <p>This is your ORBAT page.</p>
-        </div>
-    </div>
+    <h1>Order of Battle</h1>
+    <div id="orbat-container"></div>
+    <button class="add-box" onclick="addBox()">Add Box</button>
+
     <script>
-        // Include your JavaScript here
+        let boxes = [];
+
+        function loadOrbat() {
+            fetch('/api/orbat')
+                .then(response => response.json())
+                .then(data => {
+                    boxes = data.boxes || [];
+                    renderOrbat();
+                });
+        }
+
+        function renderOrbat() {
+            const container = document.getElementById('orbat-container');
+            container.innerHTML = '';
+            boxes.forEach((box, boxIndex) => {
+                const boxDiv = document.createElement('div');
+                boxDiv.className = 'box';
+                boxDiv.style.left = `${box.position.x}px`;
+                boxDiv.style.top = `${box.position.y}px`;
+
+                const title = document.createElement('div');
+                title.className = 'box-title';
+                title.textContent = box.title;
+                boxDiv.appendChild(title);
+
+                box.ranks.forEach((rank, rankIndex) => {
+                    const rankDiv = document.createElement('div');
+                    rankDiv.className = 'rank';
+
+                    const rankTitle = document.createElement('span');
+                    rankTitle.className = 'rank-title';
+                    rankTitle.textContent = rank.title;
+                    rankDiv.appendChild(rankTitle);
+
+                    rank.usernames.forEach(username => {
+                        const usernameSpan = document.createElement('span');
+                        usernameSpan.textContent = ` ${username}`;
+                        rankDiv.appendChild(usernameSpan);
+                    });
+
+                    boxDiv.appendChild(rankDiv);
+                });
+
+                const addRankBtn = document.createElement('button');
+                addRankBtn.className = 'add-rank';
+                addRankBtn.textContent = 'Add Rank';
+                addRankBtn.onclick = () => addRank(boxIndex);
+                boxDiv.appendChild(addRankBtn);
+
+                container.appendChild(boxDiv);
+            });
+        }
+
+        function addBox() {
+            const newBox = {
+                title: `Box ${boxes.length + 1}`,
+                ranks: [],
+                position: { x: 50, y: 50 }
+            };
+            boxes.push(newBox);
+            renderOrbat();
+        }
+
+        function addRank(boxIndex) {
+            const newRank = {
+                title: `Rank ${boxes[boxIndex].ranks.length + 1}`,
+                usernames: []
+            };
+            boxes[boxIndex].ranks.push(newRank);
+            renderOrbat();
+        }
+
+        function saveOrbat() {
+            fetch('/api/orbat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ boxes })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Orbat saved successfully');
+                }
+            });
+        }
+
+        window.onload = loadOrbat;
     </script>
 </body>
 </html>
