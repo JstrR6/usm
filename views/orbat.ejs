@@ -42,6 +42,11 @@
             width: 100px;
             margin-left: 5px;
         }
+        .delete-btn {
+            color: red;
+            cursor: pointer;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -71,19 +76,23 @@
                 boxDiv.className = 'box';
                 boxDiv.style.left = `${box.position.x}px`;
                 boxDiv.style.top = `${box.position.y}px`;
-                boxDiv.draggable = true;
 
-                boxDiv.addEventListener('dragstart', (e) => {
+                boxDiv.onmousedown = (e) => {
                     draggedElement = boxDiv;
-                    offsetX = e.offsetX;
-                    offsetY = e.offsetY;
-                });
-
-                boxDiv.addEventListener('dragend', (e) => {
-                    box.position.x = e.pageX - offsetX;
-                    box.position.y = e.pageY - offsetY;
-                    saveOrbat();
-                });
+                    offsetX = e.clientX - boxDiv.offsetLeft;
+                    offsetY = e.clientY - boxDiv.offsetTop;
+                    document.onmousemove = (e) => {
+                        boxDiv.style.left = `${e.clientX - offsetX}px`;
+                        boxDiv.style.top = `${e.clientY - offsetY}px`;
+                    };
+                    document.onmouseup = () => {
+                        document.onmousemove = null;
+                        document.onmouseup = null;
+                        box.position.x = boxDiv.offsetLeft;
+                        box.position.y = boxDiv.offsetTop;
+                        saveOrbat();
+                    };
+                };
 
                 const titleInput = document.createElement('input');
                 titleInput.type = 'text';
@@ -94,6 +103,16 @@
                     saveOrbat();
                 };
                 boxDiv.appendChild(titleInput);
+
+                const deleteBoxBtn = document.createElement('span');
+                deleteBoxBtn.className = 'delete-btn';
+                deleteBoxBtn.textContent = 'Delete Box';
+                deleteBoxBtn.onclick = () => {
+                    boxes.splice(boxIndex, 1);
+                    renderOrbat();
+                    saveOrbat();
+                };
+                boxDiv.appendChild(deleteBoxBtn);
 
                 box.ranks.forEach((rank, rankIndex) => {
                     const rankDiv = document.createElement('div');
@@ -117,6 +136,16 @@
                             saveOrbat();
                         };
                         rankDiv.appendChild(usernameInput);
+
+                        const deleteUsernameBtn = document.createElement('span');
+                        deleteUsernameBtn.className = 'delete-btn';
+                        deleteUsernameBtn.textContent = 'x';
+                        deleteUsernameBtn.onclick = () => {
+                            rank.usernames.splice(usernameIndex, 1);
+                            renderOrbat();
+                            saveOrbat();
+                        };
+                        rankDiv.appendChild(deleteUsernameBtn);
                     });
 
                     const addUsernameBtn = document.createElement('button');
@@ -126,6 +155,16 @@
                         renderOrbat();
                     };
                     rankDiv.appendChild(addUsernameBtn);
+
+                    const deleteRankBtn = document.createElement('span');
+                    deleteRankBtn.className = 'delete-btn';
+                    deleteRankBtn.textContent = 'Delete Rank';
+                    deleteRankBtn.onclick = () => {
+                        box.ranks.splice(rankIndex, 1);
+                        renderOrbat();
+                        saveOrbat();
+                    };
+                    rankDiv.appendChild(deleteRankBtn);
 
                     boxDiv.appendChild(rankDiv);
                 });
