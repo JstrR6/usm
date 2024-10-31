@@ -206,7 +206,7 @@
                     if (canEdit) {
                         const deleteRankBtn = document.createElement('span');
                         deleteRankBtn.className = 'delete-btn';
-                        deleteRankBtn.textContent = 'Delete Rank';
+                        deleteRankBtn.textContent = '';
                         deleteRankBtn.onclick = () => {
                             box.ranks.splice(rankIndex, 1);
                             renderOrbat();
