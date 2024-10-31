@@ -229,7 +229,7 @@
                     if (canEdit) {
                         const deleteRankBtn = document.createElement('span');
                         deleteRankBtn.className = 'delete-btn';
-                        deleteRankBtn.textContent = 'Delete Rank';
+                        deleteRankBtn.textContent = 'X';
                         deleteRankBtn.onclick = () => {
                             box.ranks.splice(rankIndex, 1);
                             renderOrbat();
@@ -244,7 +244,7 @@
                 if (canEdit) {
                     const addRankBtn = document.createElement('button');
                     addRankBtn.className = 'add-rank';
-                    addRankBtn.textContent = 'Add Rank';
+                    addRankBtn.textContent = '+';
                     addRankBtn.onclick = () => {
                         addRank(boxIndex);
                     };
