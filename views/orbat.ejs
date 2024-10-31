@@ -6,19 +6,29 @@
     <title>Order of Battle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
-        /* Same styles as provided */
+        /* Your existing styles */
+        .box {
+            position: absolute;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .box-header {
+            font-weight: bold;
+        }
+        .delete-btn {
+            color: red;
+            cursor: pointer;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
     <h1>Order of Battle</h1>
     <div id="orbat-container"></div>
-
-    <!-- This section conditionally renders the "Add Box" button based on user roles -->
-    <% if (userRoles && userRoles.includes('High Command')) { %>
+    <% if (userRoles.includes('High Command')) { %>
         <button class="add-box" onclick="addBox()">Add Box</button>
     <% } %>
-
-    <!-- Store user roles data in hidden input -->
     <input type="hidden" id="userRolesData" value="<%= JSON.stringify(userRoles || []) %>">
     
     <script>
@@ -26,8 +36,6 @@
         const userRolesData = document.getElementById('userRolesData').value;
         const userRoles = JSON.parse(userRolesData);
         const canEdit = userRoles.includes('High Command');
-        
-        console.log('User Roles:', userRoles) // Debugging to confirm user roles
 
         let boxes = [];
         let draggedElement = null;
@@ -77,9 +85,12 @@
                 titleInput.type = 'text';
                 titleInput.value = box.title;
                 titleInput.className = 'box-title';
+                titleInput.readOnly = !canEdit; // Make title editable only if canEdit is true
                 titleInput.onchange = () => {
-                    box.title = titleInput.value;
-                    saveOrbat();
+                    if (canEdit) {
+                        box.title = titleInput.value;
+                        saveOrbat();
+                    }
                 };
                 boxHeader.appendChild(titleInput);
 
@@ -96,78 +107,6 @@
                 }
 
                 boxDiv.appendChild(boxHeader);
-
-                box.ranks.forEach((rank, rankIndex) => {
-                    const rankDiv = document.createElement('div');
-                    rankDiv.className = 'rank';
-
-                    if (canEdit) {
-                        const deleteRankBtn = document.createElement('span');
-                        deleteRankBtn.className = 'delete-btn';
-                        deleteRankBtn.textContent = 'Delete Rank';
-                        deleteRankBtn.onclick = () => {
-                            box.ranks.splice(rankIndex, 1);
-                            renderOrbat();
-                            saveOrbat();
-                        };
-                        rankDiv.appendChild(deleteRankBtn);
-                    }
-
-                    const rankTitleInput = document.createElement('input');
-                    rankTitleInput.type = 'text';
-                    rankTitleInput.value = rank.title;
-                    rankTitleInput.onchange = () => {
-                        rank.title = rankTitleInput.value;
-                        saveOrbat();
-                    };
-                    rankDiv.appendChild(rankTitleInput);
-
-                    rank.usernames.forEach((username, usernameIndex) => {
-                        const usernameInput = document.createElement('input');
-                        usernameInput.type = 'text';
-                        usernameInput.value = username;
-                        usernameInput.onchange = () => {
-                            rank.usernames[usernameIndex] = usernameInput.value;
-                            saveOrbat();
-                        };
-                        rankDiv.appendChild(usernameInput);
-
-                        if (canEdit) {
-                            const deleteUsernameBtn = document.createElement('span');
-                            deleteUsernameBtn.className = 'delete-btn';
-                            deleteUsernameBtn.textContent = 'x';
-                            deleteUsernameBtn.onclick = () => {
-                                rank.usernames.splice(usernameIndex, 1);
-                                renderOrbat();
-                                saveOrbat();
-                            };
-                            rankDiv.appendChild(deleteUsernameBtn);
-                        }
-                    });
-
-                    if (canEdit) {
-                        const addUsernameBtn = document.createElement('button');
-                        addUsernameBtn.textContent = '+';
-                        addUsernameBtn.onclick = () => {
-                            rank.usernames.push('');
-                            renderOrbat();
-                        };
-                        rankDiv.appendChild(addUsernameBtn);
-                    }
-
-                    boxDiv.appendChild(rankDiv);
-                });
-
-                if (canEdit) {
-                    const addRankBtn = document.createElement('button');
-                    addRankBtn.className = 'add-rank';
-                    addRankBtn.textContent = 'Add Rank';
-                    addRankBtn.onclick = () => {
-                        addRank(boxIndex);
-                    };
-                    boxDiv.appendChild(addRankBtn);
-                }
-
                 container.appendChild(boxDiv);
             });
         }
@@ -179,16 +118,6 @@
                 position: { x: 50, y: 50 }
             };
             boxes.push(newBox);
-            renderOrbat();
-            saveOrbat();
-        }
-
-        function addRank(boxIndex) {
-            const newRank = {
-                title: `Rank ${boxes[boxIndex].ranks.length + 1}`,
-                usernames: ['']
-            };
-            boxes[boxIndex].ranks.push(newRank);
             renderOrbat();
             saveOrbat();
         }
