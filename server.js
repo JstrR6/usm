@@ -125,12 +125,27 @@ app.get('/orders', (req, res) => {
   res.render('orders', { username: req.session.user.username, highestRoleName });
 });
 
-app.get('/orbat', (req, res) => {
+app.get('/orbat', async (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
   }
-  const highestRoleName = getHighestRoleName(req.session.user.roles); // Pass the user's roles
-  res.render('orbat', { username: req.session.user.username, highestRoleName });
+
+  try {
+    // Fetch all members from the database
+    const members = await Member.find().sort({ highestRole: 1, username: 1 }); // Sort by role and username
+
+    const highestRoleName = getHighestRoleName(req.session.user.roles); // Pass the user's roles
+
+    res.render('orbat', {
+      username: req.session.user.username,
+      highestRoleName,
+      members,
+      userRoles: req.session.user.roles // Pass user roles to the view
+    });
+  } catch (error) {
+    console.error('Error fetching members for Orbat:', error);
+    res.status(500).send('Server error');
+  }
 });
 
 app.get('/profile', (req, res) => {

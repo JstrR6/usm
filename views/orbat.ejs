@@ -63,9 +63,12 @@
 <body>
     <h1>Order of Battle</h1>
     <div id="orbat-container"></div>
-    <button class="add-box" onclick="addBox()">Add Box</button>
+    <% if (userRoles.includes('High Command')) { %>
+        <button class="add-box" onclick="addBox()">Add Box</button>
+    <% } %>
+    <script type="text/javascript">
+        const userRoles = JSON.parse('<%- JSON.stringify(userRoles || []) %>');
 
-    <script>
         let boxes = [];
         let draggedElement = null;
         let offsetX, offsetY;
@@ -118,15 +121,17 @@
                 };
                 boxHeader.appendChild(titleInput);
 
-                const deleteBoxBtn = document.createElement('span');
-                deleteBoxBtn.className = 'delete-btn';
-                deleteBoxBtn.textContent = 'Delete Box';
-                deleteBoxBtn.onclick = () => {
-                    boxes.splice(boxIndex, 1);
-                    renderOrbat();
-                    saveOrbat();
-                };
-                boxHeader.appendChild(deleteBoxBtn);
+                if (userRoles.includes('High Command')) {
+                    const deleteBoxBtn = document.createElement('span');
+                    deleteBoxBtn.className = 'delete-btn';
+                    deleteBoxBtn.textContent = 'Delete Box';
+                    deleteBoxBtn.onclick = () => {
+                        boxes.splice(boxIndex, 1);
+                        renderOrbat();
+                        saveOrbat();
+                    };
+                    boxHeader.appendChild(deleteBoxBtn);
+                }
 
                 boxDiv.appendChild(boxHeader);
 
@@ -134,15 +139,17 @@
                     const rankDiv = document.createElement('div');
                     rankDiv.className = 'rank';
 
-                    const deleteRankBtn = document.createElement('span');
-                    deleteRankBtn.className = 'delete-btn';
-                    deleteRankBtn.textContent = 'Delete Rank';
-                    deleteRankBtn.onclick = () => {
-                        box.ranks.splice(rankIndex, 1);
-                        renderOrbat();
-                        saveOrbat();
-                    };
-                    rankDiv.appendChild(deleteRankBtn);
+                    if (userRoles.includes('High Command')) {
+                        const deleteRankBtn = document.createElement('span');
+                        deleteRankBtn.className = 'delete-btn';
+                        deleteRankBtn.textContent = 'Delete Rank';
+                        deleteRankBtn.onclick = () => {
+                            box.ranks.splice(rankIndex, 1);
+                            renderOrbat();
+                            saveOrbat();
+                        };
+                        rankDiv.appendChild(deleteRankBtn);
+                    }
 
                     const rankTitleInput = document.createElement('input');
                     rankTitleInput.type = 'text';
@@ -163,35 +170,41 @@
                         };
                         rankDiv.appendChild(usernameInput);
 
-                        const deleteUsernameBtn = document.createElement('span');
-                        deleteUsernameBtn.className = 'delete-btn';
-                        deleteUsernameBtn.textContent = 'x';
-                        deleteUsernameBtn.onclick = () => {
-                            rank.usernames.splice(usernameIndex, 1);
-                            renderOrbat();
-                            saveOrbat();
-                        };
-                        rankDiv.appendChild(deleteUsernameBtn);
+                        if (userRoles.includes('High Command')) {
+                            const deleteUsernameBtn = document.createElement('span');
+                            deleteUsernameBtn.className = 'delete-btn';
+                            deleteUsernameBtn.textContent = 'x';
+                            deleteUsernameBtn.onclick = () => {
+                                rank.usernames.splice(usernameIndex, 1);
+                                renderOrbat();
+                                saveOrbat();
+                            };
+                            rankDiv.appendChild(deleteUsernameBtn);
+                        }
                     });
 
-                    const addUsernameBtn = document.createElement('button');
-                    addUsernameBtn.textContent = '+';
-                    addUsernameBtn.onclick = () => {
-                        rank.usernames.push('');
-                        renderOrbat();
-                    };
-                    rankDiv.appendChild(addUsernameBtn);
+                    if (userRoles.includes('High Command')) {
+                        const addUsernameBtn = document.createElement('button');
+                        addUsernameBtn.textContent = '+';
+                        addUsernameBtn.onclick = () => {
+                            rank.usernames.push('');
+                            renderOrbat();
+                        };
+                        rankDiv.appendChild(addUsernameBtn);
+                    }
 
                     boxDiv.appendChild(rankDiv);
                 });
 
-                const addRankBtn = document.createElement('button');
-                addRankBtn.className = 'add-rank';
-                addRankBtn.textContent = 'Add Rank';
-                addRankBtn.onclick = () => {
-                    addRank(boxIndex);
-                };
-                boxDiv.appendChild(addRankBtn);
+                if (userRoles.includes('High Command')) {
+                    const addRankBtn = document.createElement('button');
+                    addRankBtn.className = 'add-rank';
+                    addRankBtn.textContent = 'Add Rank';
+                    addRankBtn.onclick = () => {
+                        addRank(boxIndex);
+                    };
+                    boxDiv.appendChild(addRankBtn);
+                }
 
                 container.appendChild(boxDiv);
             });
