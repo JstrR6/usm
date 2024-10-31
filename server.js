@@ -408,19 +408,45 @@ app.post('/api/orbat', async (req, res) => {
   const { boxes } = req.body;
 
   try {
-    let orbat = await Orbat.findOne();
+    let orbat = await Orbat.findById("6722c9adfa1dda43a9e00d78");
+
     if (!orbat) {
-      orbat = new Orbat({ boxes });
-    } else {
-      orbat.boxes = boxes;
+      // Handle the case where the document does not exist
+      return res.status(404).json({ success: false, message: 'Orbat not found' });
     }
-    await orbat.save();
+
+    orbat.boxes = boxes;
+
+    // Attempt to save with retry logic
+    await saveWithRetry(orbat);
+
     res.status(200).json({ success: true, message: 'Orbat saved successfully' });
   } catch (error) {
     console.error('Error saving Orbat:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
+// Function to handle save with retry
+async function saveWithRetry(document, retries = 3) {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      await document.save();
+      return;
+    } catch (error) {
+      if (error.name === 'VersionError' && attempt < retries - 1) {
+        // Refetch the document and retry
+        document = await Orbat.findById(document._id);
+        if (!document) {
+          throw new Error('Document not found during retry');
+        }
+        document.boxes = boxes; // Reapply changes
+      } else {
+        throw error; // Rethrow if not a VersionError or out of retries
+      }
+    }
+  }
+}
 
 // Start server
 app.listen(PORT, () => {
