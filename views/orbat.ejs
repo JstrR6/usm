@@ -91,7 +91,19 @@
         let boxes = [];
         let draggedElement = null;
         let offsetX, offsetY;
-    const gridSize = 20; // Define the grid size
+        const gridSize = 20; // Define the grid size
+
+        function loadOrbat() {
+        fetch('/api/orbat')
+            .then(response => response.json())
+            .then(data => {
+                boxes = data.boxes || [];
+                renderOrbat();
+            })
+            .catch(error => {
+                console.error('Error loading Orbat:', error);
+            });
+    }
 
         function renderOrbat() {
             const container = document.getElementById('orbat-container');
