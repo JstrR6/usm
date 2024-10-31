@@ -369,15 +369,18 @@ app.post('/forms/training', async (req, res) => {
   }
 });
 
-// Load Orbat data
+// Route to get Orbat data
 app.get('/api/orbat', async (req, res) => {
-  try {
-    const orbat = await Orbat.findOne(); // Assuming a single Orbat document
-    res.json(orbat || { boxes: [] });
-  } catch (error) {
-    console.error('Error loading Orbat:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
+    try {
+        const orbat = await Orbat.findOne(); // Assuming a single Orbat document
+        if (!orbat) {
+            return res.status(404).json({ success: false, message: 'Orbat not found' });
+        }
+        res.json({ success: true, boxes: orbat.boxes });
+    } catch (error) {
+        console.error('Error loading Orbat:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
 });
 
 // Middleware to check if user has High Command role
