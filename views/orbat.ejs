@@ -11,7 +11,6 @@
             margin: 0;
             padding: 0;
             display: flex;
-            background-color: #bcbcbc;
         }
         .sidebar {
             width: 200px;
@@ -46,7 +45,7 @@
             position: absolute;
             border: 1px solid #ccc;
             padding: 10px;
-            background-color: #ffffff;
+            background-color: #f9f9f9;
         }
         .box-header {
             font-weight: bold;
@@ -265,7 +264,12 @@
             .then(data => {
                 if (data.success) {
                     console.log('Orbat saved successfully');
+                } else {
+                    console.error('Failed to save Orbat:', data.message);
                 }
+            })
+            .catch(error => {
+                console.error('Error saving Orbat:', error);
             });
         }
 
