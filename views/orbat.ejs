@@ -205,7 +205,7 @@
                     if (canEdit) {
                         const deleteRankBtn = document.createElement('span');
                         deleteRankBtn.className = 'delete-btn';
-                        deleteRankBtn.textContent = '';
+                        deleteRankBtn.textContent = 'Delete Rank';
                         deleteRankBtn.onclick = () => {
                             box.ranks.splice(rankIndex, 1);
                             renderOrbat();
@@ -253,12 +253,13 @@
         }
 
         function saveOrbat() {
+            console.log('Saving Orbat:', JSON.stringify({ boxes })); // Debugging: Log the data being sent
             fetch('/api/orbat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ boxes })
+                body: JSON.stringify({ boxes }) // Ensure the entire boxes array is sent
             })
             .then(response => response.json())
             .then(data => {

@@ -390,17 +390,24 @@ function checkHighCommandRole(req, res, next) {
 
 // Save Orbat data with role check
 app.post('/api/orbat', checkHighCommandRole, async (req, res) => {
-  const { boxes } = req.body;
-
   try {
-    let orbat = await Orbat.findById("6722c9adfa1dda43a9e00d78");
-
-    if (!orbat) {
-      return res.status(404).json({ success: false, message: 'Orbat not found' });
+    const { boxes } = req.body; // Extract boxes from the request body
+    if (!boxes) {
+      return res.status(400).json({ success: false, message: 'No data provided' });
     }
 
-    orbat.boxes = boxes;
-    await saveWithRetry(orbat);
+    // Assuming you have a single Orbat document
+    let orbat = await Orbat.findOne();
+
+    if (!orbat) {
+      // If no Orbat document exists, create a new one
+      orbat = new Orbat({ boxes });
+    } else {
+      // Update the existing Orbat document
+      orbat.boxes = boxes;
+    }
+
+    await orbat.save();
 
     res.status(200).json({ success: true, message: 'Orbat saved successfully' });
   } catch (error) {
