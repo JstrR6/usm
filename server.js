@@ -63,15 +63,6 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Member not found' });
     }
 
-    if (!member.password) {
-      console.log('Setting password for the first time');
-      const salt = await bcrypt.genSalt(10);
-      member.password = await bcrypt.hash(password, salt);
-      await member.save(); // Ensure the password is saved to the database
-      console.log('Password set successfully in the database');
-      return res.status(200).json({ success: false, message: 'Password set successfully. Please login again.' });
-    }
-
     const isMatch = await bcrypt.compare(password, member.password);
     console.log(`Password match: ${isMatch}`);
 
@@ -80,9 +71,13 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Set session or token here
-    req.session.user = member; // Example using session
-    console.log(`Session set for user: ${req.session.user.username}`);
+    // Fetch and store user roles in session
+    const roleNames = await getRoleNamesByIds(member.roles);
+    req.session.user = {
+      username: member.username,
+      roles: roleNames
+    };
+    console.log(`Session set for user: ${req.session.user.username} with roles: ${roleNames}`);
 
     res.status(200).json({ 
       success: true, 
@@ -125,27 +120,9 @@ app.get('/orders', (req, res) => {
   res.render('orders', { username: req.session.user.username, highestRoleName });
 });
 
-app.get('/orbat', async (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/');
-  }
-
-  try {
-    // Fetch all members from the database
-    const members = await Member.find().sort({ highestRole: 1, username: 1 }); // Sort by role and username
-
-    const highestRoleName = getHighestRoleName(req.session.user.roles); // Pass the user's roles
-
-    res.render('orbat', {
-      username: req.session.user.username,
-      highestRoleName,
-      members,
-      userRoles: req.session.user.roles // Pass user roles to the view
-    });
-  } catch (error) {
-    console.error('Error fetching members for Orbat:', error);
-    res.status(500).send('Server error');
-  }
+app.get('/orbat', (req, res) => {
+  const userRoles = req.session.user ? req.session.user.roles : [];
+  res.render('orbat', { userRoles });
 });
 
 app.get('/profile', (req, res) => {

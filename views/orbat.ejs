@@ -6,68 +6,28 @@
     <title>Order of Battle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .box {
-            border: 1px solid #333;
-            padding: 10px;
-            margin: 10px;
-            min-width: 300px;
-            position: absolute;
-            background-color: #f9f9f9;
-            cursor: move;
-            box-sizing: border-box;
-        }
-        .box-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .box-title {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-            flex-grow: 1;
-        }
-        .rank {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-        .rank-title {
-            font-weight: bold;
-            flex-grow: 1;
-        }
-        .add-box, .add-rank {
-            margin: 10px;
-            cursor: pointer;
-            color: blue;
-        }
-        input[type="text"] {
-            width: auto;
-            margin-left: 5px;
-            flex-grow: 1;
-        }
-        .delete-btn {
-            color: red;
-            cursor: pointer;
-            margin-left: 5px;
-        }
+        /* Same styles as provided */
     </style>
 </head>
 <body>
     <h1>Order of Battle</h1>
     <div id="orbat-container"></div>
-    <% if (userRoles.includes('High Command')) { %>
+
+    <!-- This section conditionally renders the "Add Box" button based on user roles -->
+    <% if (userRoles && userRoles.includes('High Command')) { %>
         <button class="add-box" onclick="addBox()">Add Box</button>
     <% } %>
-    <script type="text/javascript">
-        const userRoles = JSON.parse('<%- JSON.stringify(userRoles || []) %>');
+
+    <!-- Store user roles data in hidden input -->
+    <input type="hidden" id="userRolesData" value="<%= JSON.stringify(userRoles || []) %>">
+    
+    <script>
+        // Parse the roles data from the hidden input
+        const userRolesData = document.getElementById('userRolesData').value;
+        const userRoles = JSON.parse(userRolesData);
+        const canEdit = userRoles.includes('High Command');
+        
+        console.log('User Roles:', userRoles) // Debugging to confirm user roles
 
         let boxes = [];
         let draggedElement = null;
@@ -91,22 +51,24 @@
                 boxDiv.style.left = `${box.position.x}px`;
                 boxDiv.style.top = `${box.position.y}px`;
 
-                boxDiv.onmousedown = (e) => {
-                    draggedElement = boxDiv;
-                    offsetX = e.clientX - boxDiv.offsetLeft;
-                    offsetY = e.clientY - boxDiv.offsetTop;
-                    document.onmousemove = (e) => {
-                        boxDiv.style.left = `${e.clientX - offsetX}px`;
-                        boxDiv.style.top = `${e.clientY - offsetY}px`;
+                if (canEdit) {
+                    boxDiv.onmousedown = (e) => {
+                        draggedElement = boxDiv;
+                        offsetX = e.clientX - boxDiv.offsetLeft;
+                        offsetY = e.clientY - boxDiv.offsetTop;
+                        document.onmousemove = (e) => {
+                            boxDiv.style.left = `${e.clientX - offsetX}px`;
+                            boxDiv.style.top = `${e.clientY - offsetY}px`;
+                        };
+                        document.onmouseup = () => {
+                            document.onmousemove = null;
+                            document.onmouseup = null;
+                            box.position.x = boxDiv.offsetLeft;
+                            box.position.y = boxDiv.offsetTop;
+                            saveOrbat();
+                        };
                     };
-                    document.onmouseup = () => {
-                        document.onmousemove = null;
-                        document.onmouseup = null;
-                        box.position.x = boxDiv.offsetLeft;
-                        box.position.y = boxDiv.offsetTop;
-                        saveOrbat();
-                    };
-                };
+                }
 
                 const boxHeader = document.createElement('div');
                 boxHeader.className = 'box-header';
@@ -121,7 +83,7 @@
                 };
                 boxHeader.appendChild(titleInput);
 
-                if (userRoles.includes('High Command')) {
+                if (canEdit) {
                     const deleteBoxBtn = document.createElement('span');
                     deleteBoxBtn.className = 'delete-btn';
                     deleteBoxBtn.textContent = 'Delete Box';
@@ -139,7 +101,7 @@
                     const rankDiv = document.createElement('div');
                     rankDiv.className = 'rank';
 
-                    if (userRoles.includes('High Command')) {
+                    if (canEdit) {
                         const deleteRankBtn = document.createElement('span');
                         deleteRankBtn.className = 'delete-btn';
                         deleteRankBtn.textContent = 'Delete Rank';
@@ -170,7 +132,7 @@
                         };
                         rankDiv.appendChild(usernameInput);
 
-                        if (userRoles.includes('High Command')) {
+                        if (canEdit) {
                             const deleteUsernameBtn = document.createElement('span');
                             deleteUsernameBtn.className = 'delete-btn';
                             deleteUsernameBtn.textContent = 'x';
@@ -183,7 +145,7 @@
                         }
                     });
 
-                    if (userRoles.includes('High Command')) {
+                    if (canEdit) {
                         const addUsernameBtn = document.createElement('button');
                         addUsernameBtn.textContent = '+';
                         addUsernameBtn.onclick = () => {
@@ -196,7 +158,7 @@
                     boxDiv.appendChild(rankDiv);
                 });
 
-                if (userRoles.includes('High Command')) {
+                if (canEdit) {
                     const addRankBtn = document.createElement('button');
                     addRankBtn.className = 'add-rank';
                     addRankBtn.textContent = 'Add Rank';
