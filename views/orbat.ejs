@@ -37,6 +37,10 @@
         .sidebar-btn:hover {
             background-color: #555;
         }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+        }
         .box {
             position: absolute;
             border: 1px solid #ccc;
@@ -45,16 +49,23 @@
         }
         .box-header {
             font-weight: bold;
+            margin-bottom: 10px;
         }
         .delete-btn {
             color: red;
             cursor: pointer;
             margin-left: 10px;
         }
+        .rank {
+            margin-bottom: 10px;
+        }
+        .add-box, .add-rank {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="sidebar"></div>
+    <div class="sidebar">
         <h2>Dashboard</h2>
         <button class="sidebar-btn" onclick="location.href='/dashboard'"><i class="fas fa-home"></i> Home</button>
         <button class="sidebar-btn" onclick="location.href='/forms'"><i class="fas fa-file-alt"></i> Forms</button>
@@ -62,31 +73,21 @@
         <button class="sidebar-btn" onclick="location.href='/orbat'"><i class="fas fa-users"></i> ORBAT</button>
         <button class="sidebar-btn" onclick="location.href='/profile'"><i class="fas fa-user"></i> Profile</button>
     </div>
-    <h1>Order of Battle</h1>
-    <div id="orbat-container"></div>
-    <% if (userRoles.includes('High Command')) { %>
-        <button class="add-box" onclick="addBox()">Add Box</button>
-    <% } %>
-    <input type="hidden" id="userRolesData" value="<%= JSON.stringify(userRoles || []) %>">
-    
+    <div class="main-content">
+        <h1>Order of Battle</h1>
+        <div id="orbat-container"></div>
+        <% if (userRoles.includes('High Command')) { %>
+            <button class="add-box" onclick="addBox()">Add Box</button>
+        <% } %>
+    </div>
+
     <script>
-        // Parse the roles data from the hidden input
-        const userRolesData = document.getElementById('userRolesData').value;
-        const userRoles = JSON.parse(userRolesData);
+        const userRoles = <%- JSON.stringify(userRoles || []) %>;
         const canEdit = userRoles.includes('High Command');
 
-        let boxes = [];
+        let boxes = <%- JSON.stringify(initialBoxes || []) %>;
         let draggedElement = null;
         let offsetX, offsetY;
-
-        function loadOrbat() {
-            fetch('/api/orbat')
-                .then(response => response.json())
-                .then(data => {
-                    boxes = data.boxes || [];
-                    renderOrbat();
-                });
-        }
 
         function renderOrbat() {
             const container = document.getElementById('orbat-container');
@@ -264,7 +265,7 @@
             });
         }
 
-        window.onload = loadOrbat;
+        window.onload = renderOrbat;
     </script>
 </body>
 </html>
