@@ -18,20 +18,30 @@
             border: 1px solid #333;
             padding: 10px;
             margin: 10px;
-            width: 300px;
+            min-width: 300px;
             position: absolute;
             background-color: #f9f9f9;
             cursor: move;
+            box-sizing: border-box;
+        }
+        .box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .box-title {
             font-size: 1.5em;
             margin-bottom: 10px;
+            flex-grow: 1;
         }
         .rank {
+            display: flex;
+            align-items: center;
             margin-bottom: 5px;
         }
         .rank-title {
             font-weight: bold;
+            flex-grow: 1;
         }
         .add-box, .add-rank {
             margin: 10px;
@@ -39,8 +49,9 @@
             color: blue;
         }
         input[type="text"] {
-            width: 100px;
+            width: auto;
             margin-left: 5px;
+            flex-grow: 1;
         }
         .delete-btn {
             color: red;
@@ -94,6 +105,9 @@
                     };
                 };
 
+                const boxHeader = document.createElement('div');
+                boxHeader.className = 'box-header';
+
                 const titleInput = document.createElement('input');
                 titleInput.type = 'text';
                 titleInput.value = box.title;
@@ -102,7 +116,7 @@
                     box.title = titleInput.value;
                     saveOrbat();
                 };
-                boxDiv.appendChild(titleInput);
+                boxHeader.appendChild(titleInput);
 
                 const deleteBoxBtn = document.createElement('span');
                 deleteBoxBtn.className = 'delete-btn';
@@ -112,11 +126,23 @@
                     renderOrbat();
                     saveOrbat();
                 };
-                boxDiv.appendChild(deleteBoxBtn);
+                boxHeader.appendChild(deleteBoxBtn);
+
+                boxDiv.appendChild(boxHeader);
 
                 box.ranks.forEach((rank, rankIndex) => {
                     const rankDiv = document.createElement('div');
                     rankDiv.className = 'rank';
+
+                    const deleteRankBtn = document.createElement('span');
+                    deleteRankBtn.className = 'delete-btn';
+                    deleteRankBtn.textContent = 'Delete Rank';
+                    deleteRankBtn.onclick = () => {
+                        box.ranks.splice(rankIndex, 1);
+                        renderOrbat();
+                        saveOrbat();
+                    };
+                    rankDiv.appendChild(deleteRankBtn);
 
                     const rankTitleInput = document.createElement('input');
                     rankTitleInput.type = 'text';
@@ -155,16 +181,6 @@
                         renderOrbat();
                     };
                     rankDiv.appendChild(addUsernameBtn);
-
-                    const deleteRankBtn = document.createElement('span');
-                    deleteRankBtn.className = 'delete-btn';
-                    deleteRankBtn.textContent = 'Delete Rank';
-                    deleteRankBtn.onclick = () => {
-                        box.ranks.splice(rankIndex, 1);
-                        renderOrbat();
-                        saveOrbat();
-                    };
-                    rankDiv.appendChild(deleteRankBtn);
 
                     boxDiv.appendChild(rankDiv);
                 });
