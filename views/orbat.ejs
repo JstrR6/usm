@@ -85,10 +85,15 @@
                     saveOrbat();
                 });
 
-                const title = document.createElement('div');
-                title.className = 'box-title';
-                title.textContent = box.title;
-                boxDiv.appendChild(title);
+                const titleInput = document.createElement('input');
+                titleInput.type = 'text';
+                titleInput.value = box.title;
+                titleInput.className = 'box-title';
+                titleInput.onchange = () => {
+                    box.title = titleInput.value;
+                    saveOrbat();
+                };
+                boxDiv.appendChild(titleInput);
 
                 box.ranks.forEach((rank, rankIndex) => {
                     const rankDiv = document.createElement('div');
