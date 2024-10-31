@@ -80,12 +80,15 @@
             <button class="add-box" onclick="addBox()">Add Box</button>
         <% } %>
     </div>
-
+    <input type="hidden" id="userRolesData" value="<%= JSON.stringify(userRoles || []) %>">
+    
     <script>
-        const userRoles = <%- JSON.stringify(userRoles || []) %>;
+        // Parse the roles data from the hidden input
+        const userRolesData = document.getElementById('userRolesData').value;
+        const userRoles = JSON.parse(userRolesData);
         const canEdit = userRoles.includes('High Command');
 
-        let boxes = <%- JSON.stringify(initialBoxes || []) %>;
+        let boxes = [];
         let draggedElement = null;
         let offsetX, offsetY;
 
