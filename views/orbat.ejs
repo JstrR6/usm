@@ -85,7 +85,7 @@
                 titleInput.type = 'text';
                 titleInput.value = box.title;
                 titleInput.className = 'box-title';
-                titleInput.readOnly = !canEdit; // Make title editable only if canEdit is true
+                titleInput.readOnly = !canEdit;
                 titleInput.onchange = () => {
                     if (canEdit) {
                         box.title = titleInput.value;
@@ -107,6 +107,84 @@
                 }
 
                 boxDiv.appendChild(boxHeader);
+
+                box.ranks.forEach((rank, rankIndex) => {
+                    const rankDiv = document.createElement('div');
+                    rankDiv.className = 'rank';
+
+                    const rankTitleInput = document.createElement('input');
+                    rankTitleInput.type = 'text';
+                    rankTitleInput.value = rank.title;
+                    rankTitleInput.readOnly = !canEdit;
+                    rankTitleInput.onchange = () => {
+                        if (canEdit) {
+                            rank.title = rankTitleInput.value;
+                            saveOrbat();
+                        }
+                    };
+                    rankDiv.appendChild(rankTitleInput);
+
+                    rank.usernames.forEach((username, usernameIndex) => {
+                        const usernameInput = document.createElement('input');
+                        usernameInput.type = 'text';
+                        usernameInput.value = username;
+                        usernameInput.readOnly = !canEdit;
+                        usernameInput.onchange = () => {
+                            if (canEdit) {
+                                rank.usernames[usernameIndex] = usernameInput.value;
+                                saveOrbat();
+                            }
+                        };
+                        rankDiv.appendChild(usernameInput);
+
+                        if (canEdit) {
+                            const deleteUsernameBtn = document.createElement('span');
+                            deleteUsernameBtn.className = 'delete-btn';
+                            deleteUsernameBtn.textContent = 'x';
+                            deleteUsernameBtn.onclick = () => {
+                                rank.usernames.splice(usernameIndex, 1);
+                                renderOrbat();
+                                saveOrbat();
+                            };
+                            rankDiv.appendChild(deleteUsernameBtn);
+                        }
+                    });
+
+                    if (canEdit) {
+                        const addUsernameBtn = document.createElement('button');
+                        addUsernameBtn.textContent = '+';
+                        addUsernameBtn.onclick = () => {
+                            rank.usernames.push('');
+                            renderOrbat();
+                        };
+                        rankDiv.appendChild(addUsernameBtn);
+                    }
+
+                    if (canEdit) {
+                        const deleteRankBtn = document.createElement('span');
+                        deleteRankBtn.className = 'delete-btn';
+                        deleteRankBtn.textContent = 'Delete Rank';
+                        deleteRankBtn.onclick = () => {
+                            box.ranks.splice(rankIndex, 1);
+                            renderOrbat();
+                            saveOrbat();
+                        };
+                        rankDiv.appendChild(deleteRankBtn);
+                    }
+
+                    boxDiv.appendChild(rankDiv);
+                });
+
+                if (canEdit) {
+                    const addRankBtn = document.createElement('button');
+                    addRankBtn.className = 'add-rank';
+                    addRankBtn.textContent = 'Add Rank';
+                    addRankBtn.onclick = () => {
+                        addRank(boxIndex);
+                    };
+                    boxDiv.appendChild(addRankBtn);
+                }
+
                 container.appendChild(boxDiv);
             });
         }
@@ -118,6 +196,16 @@
                 position: { x: 50, y: 50 }
             };
             boxes.push(newBox);
+            renderOrbat();
+            saveOrbat();
+        }
+
+        function addRank(boxIndex) {
+            const newRank = {
+                title: `Rank ${boxes[boxIndex].ranks.length + 1}`,
+                usernames: ['']
+            };
+            boxes[boxIndex].ranks.push(newRank);
             renderOrbat();
             saveOrbat();
         }
