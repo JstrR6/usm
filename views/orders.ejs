@@ -66,11 +66,70 @@
         </div>
         <div class="content">
             <h2>Orders</h2>
-            <p>This is your orders page.</p>
+            <ul id="ordersList"></ul>
+            <% if (userRoles.includes('High Command')) { %>
+                <form id="orderForm">
+                    <input type="text" id="orderTitle" placeholder="Order Title" required>
+                    <textarea id="orderDescription" placeholder="Order Description"></textarea>
+                    <button type="submit">Create Order</button>
+                </form>
+            <% } else { %>
+                <p>You do not have permission to create orders.</p>
+            <% } %>
         </div>
     </div>
+    <input type="hidden" id="userRolesData" value="<%= JSON.stringify(userRoles || []) %>">
+    
     <script>
-        // Include your JavaScript here
+        const userRolesData = document.getElementById('userRolesData').value;
+        const userRoles = JSON.parse(userRolesData);
+        const canCreateOrders = userRoles.includes('High Command');
+
+        document.getElementById('orderForm').style.display = canCreateOrders ? 'block' : 'none';
+
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('orderTitle').value;
+            const description = document.getElementById('orderDescription').value;
+
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    loadOrders();
+                } else {
+                    console.error('Failed to create order:', data.message);
+                }
+            } catch (error) {
+                console.error('Error creating order:', error);
+            }
+        });
+
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders');
+                const data = await response.json();
+                if (data.success) {
+                    const ordersList = document.getElementById('ordersList');
+                    ordersList.innerHTML = '';
+                    data.orders.forEach(order => {
+                        const li = document.createElement('li');
+                        li.textContent = `${order.title} - ${order.status}`;
+                        ordersList.appendChild(li);
+                    });
+                } else {
+                    console.error('Failed to load orders:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        window.onload = loadOrders;
     </script>
 </body>
 </html>

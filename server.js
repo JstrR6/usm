@@ -11,6 +11,7 @@ const passport = require('passport');
 const { getRoleNamesByIds, getHighestRoleName } = require('./roleManager'); // Import the function
 const { v4: uuidv4 } = require('uuid'); // Use UUID for unique training IDs
 const Orbat = require('./models/Orbat'); // Import the Orbat model
+const Order = require('./models/Order'); // Import the Order model
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -439,6 +440,61 @@ async function saveWithRetry(orbatDocument, boxes, retries = 3) {
     }
   }
 }
+
+// Get all orders
+app.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await Order.find();
+    res.json({ success: true, orders });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Create a new order
+app.post('/api/orders', checkHighCommandRole, async (req, res) => {
+  try {
+    const { title, description } = req.body;
+    const newOrder = new Order({ title, description });
+    await newOrder.save();
+    res.status(201).json({ success: true, order: newOrder });
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Update an order
+app.put('/api/orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, status } = req.body;
+    const order = await Order.findByIdAndUpdate(id, { title, description, status, updatedAt: Date.now() }, { new: true });
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    res.json({ success: true, order });
+  } catch (error) {
+    console.error('Error updating order:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Delete an order
+app.delete('/api/orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findByIdAndDelete(id);
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    res.json({ success: true, message: 'Order deleted' });
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 // Start server
 app.listen(PORT, () => {
