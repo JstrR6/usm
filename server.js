@@ -403,21 +403,26 @@ app.get('/api/orbat', async (req, res) => {
   }
 });
 
-// Save Orbat data
-app.post('/api/orbat', async (req, res) => {
+// Middleware to check if user has High Command role
+function checkHighCommandRole(req, res, next) {
+  if (req.session.user && req.session.user.roles.includes('High Command')) {
+    return next();
+  }
+  return res.status(403).json({ success: false, message: 'Access denied' });
+}
+
+// Save Orbat data with role check
+app.post('/api/orbat', checkHighCommandRole, async (req, res) => {
   const { boxes } = req.body;
 
   try {
     let orbat = await Orbat.findById("6722c9adfa1dda43a9e00d78");
 
     if (!orbat) {
-      // Handle the case where the document does not exist
       return res.status(404).json({ success: false, message: 'Orbat not found' });
     }
 
     orbat.boxes = boxes;
-
-    // Attempt to save with retry logic
     await saveWithRetry(orbat);
 
     res.status(200).json({ success: true, message: 'Orbat saved successfully' });
