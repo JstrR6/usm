@@ -24,6 +24,14 @@
     </style>
 </head>
 <body>
+    <div class="sidebar"></div>
+        <h2>Dashboard</h2>
+        <button class="sidebar-btn" onclick="location.href='/dashboard'"><i class="fas fa-home"></i> Home</button>
+        <button class="sidebar-btn" onclick="location.href='/forms'"><i class="fas fa-file-alt"></i> Forms</button>
+        <button class="sidebar-btn" onclick="location.href='/orders'"><i class="fas fa-shopping-cart"></i> Orders</button>
+        <button class="sidebar-btn" onclick="location.href='/orbat'"><i class="fas fa-users"></i> ORBAT</button>
+        <button class="sidebar-btn" onclick="location.href='/profile'"><i class="fas fa-user"></i> Profile</button>
+    </div>
     <h1>Order of Battle</h1>
     <div id="orbat-container"></div>
     <% if (userRoles.includes('High Command')) { %>
@@ -193,7 +201,7 @@
             const newBox = {
                 title: `Box ${boxes.length + 1}`,
                 ranks: [],
-                position: { x: 50, y: 50 }
+                position: { x: 100, y: 50 }
             };
             boxes.push(newBox);
             renderOrbat();

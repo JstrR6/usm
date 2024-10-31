@@ -410,19 +410,19 @@ app.post('/api/orbat', checkHighCommandRole, async (req, res) => {
 });
 
 // Function to handle save with retry
-async function saveWithRetry(document, retries = 3) {
+async function saveWithRetry(orbatDocument, boxes, retries = 3) {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
-      await document.save();
+      orbatDocument.boxes = boxes; // Ensure boxes is assigned here
+      await orbatDocument.save();
       return;
     } catch (error) {
       if (error.name === 'VersionError' && attempt < retries - 1) {
         // Refetch the document and retry
-        document = await Orbat.findById(document._id);
-        if (!document) {
+        orbatDocument = await Orbat.findById(orbatDocument._id);
+        if (!orbatDocument) {
           throw new Error('Document not found during retry');
         }
-        document.boxes = boxes; // Reapply changes
       } else {
         throw error; // Rethrow if not a VersionError or out of retries
       }
