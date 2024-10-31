@@ -91,190 +91,198 @@
         let boxes = [];
         let draggedElement = null;
         let offsetX, offsetY;
+    const gridSize = 20; // Define the grid size
 
         function renderOrbat() {
             const container = document.getElementById('orbat-container');
-            container.innerHTML = '';
-            boxes.forEach((box, boxIndex) => {
-                const boxDiv = document.createElement('div');
-                boxDiv.className = 'box';
-                boxDiv.style.left = `${box.position.x}px`;
-                boxDiv.style.top = `${box.position.y}px`;
+        container.innerHTML = '';
+        boxes.forEach((box, boxIndex) => {
+            const boxDiv = document.createElement('div');
+            boxDiv.className = 'box';
+            boxDiv.style.left = `${box.position.x}px`;
+            boxDiv.style.top = `${box.position.y}px`;
 
-                if (canEdit) {
-                    boxDiv.onmousedown = (e) => {
-                        draggedElement = boxDiv;
-                        offsetX = e.clientX - boxDiv.offsetLeft;
-                        offsetY = e.clientY - boxDiv.offsetTop;
-                        document.onmousemove = (e) => {
-                            boxDiv.style.left = `${e.clientX - offsetX}px`;
-                            boxDiv.style.top = `${e.clientY - offsetY}px`;
-                        };
-                        document.onmouseup = () => {
-                            document.onmousemove = null;
-                            document.onmouseup = null;
-                            box.position.x = boxDiv.offsetLeft;
-                            box.position.y = boxDiv.offsetTop;
-                            saveOrbat();
-                        };
+            if (canEdit) {
+                boxDiv.onmousedown = (e) => {
+                    draggedElement = boxDiv;
+                    offsetX = e.clientX - boxDiv.offsetLeft;
+                    offsetY = e.clientY - boxDiv.offsetTop;
+                    document.onmousemove = (e) => {
+                        let newX = e.clientX - offsetX;
+                        let newY = e.clientY - offsetY;
+
+                        // Snap to grid
+                        newX = Math.round(newX / gridSize) * gridSize;
+                        newY = Math.round(newY / gridSize) * gridSize;
+
+                        boxDiv.style.left = `${newX}px`;
+                        boxDiv.style.top = `${newY}px`;
                     };
+                    document.onmouseup = () => {
+                        document.onmousemove = null;
+                        document.onmouseup = null;
+                        box.position.x = parseInt(boxDiv.style.left, 10);
+                        box.position.y = parseInt(boxDiv.style.top, 10);
+                        saveOrbat();
+                    };
+                };
+            }
+
+            const boxHeader = document.createElement('div');
+            boxHeader.className = 'box-header';
+
+            const titleInput = document.createElement('input');
+            titleInput.type = 'text';
+            titleInput.value = box.title;
+            titleInput.className = 'box-title';
+            titleInput.readOnly = !canEdit;
+            titleInput.onchange = () => {
+                if (canEdit) {
+                    box.title = titleInput.value;
+                    saveOrbat();
                 }
+            };
+            boxHeader.appendChild(titleInput);
 
-                const boxHeader = document.createElement('div');
-                boxHeader.className = 'box-header';
+            if (canEdit) {
+                const deleteBoxBtn = document.createElement('span');
+                deleteBoxBtn.className = 'delete-btn';
+                deleteBoxBtn.textContent = 'Delete Box';
+                deleteBoxBtn.onclick = () => {
+                    boxes.splice(boxIndex, 1);
+                    renderOrbat();
+                    saveOrbat();
+                };
+                boxHeader.appendChild(deleteBoxBtn);
+            }
 
-                const titleInput = document.createElement('input');
-                titleInput.type = 'text';
-                titleInput.value = box.title;
-                titleInput.className = 'box-title';
-                titleInput.readOnly = !canEdit;
-                titleInput.onchange = () => {
+            boxDiv.appendChild(boxHeader);
+
+            box.ranks.forEach((rank, rankIndex) => {
+                const rankDiv = document.createElement('div');
+                rankDiv.className = 'rank';
+
+                const rankTitleInput = document.createElement('input');
+                rankTitleInput.type = 'text';
+                rankTitleInput.value = rank.title;
+                rankTitleInput.readOnly = !canEdit;
+                rankTitleInput.onchange = () => {
                     if (canEdit) {
-                        box.title = titleInput.value;
+                        rank.title = rankTitleInput.value;
                         saveOrbat();
                     }
                 };
-                boxHeader.appendChild(titleInput);
+                rankDiv.appendChild(rankTitleInput);
 
-                if (canEdit) {
-                    const deleteBoxBtn = document.createElement('span');
-                    deleteBoxBtn.className = 'delete-btn';
-                    deleteBoxBtn.textContent = 'Delete Box';
-                    deleteBoxBtn.onclick = () => {
-                        boxes.splice(boxIndex, 1);
-                        renderOrbat();
-                        saveOrbat();
-                    };
-                    boxHeader.appendChild(deleteBoxBtn);
-                }
-
-                boxDiv.appendChild(boxHeader);
-
-                box.ranks.forEach((rank, rankIndex) => {
-                    const rankDiv = document.createElement('div');
-                    rankDiv.className = 'rank';
-
-                    const rankTitleInput = document.createElement('input');
-                    rankTitleInput.type = 'text';
-                    rankTitleInput.value = rank.title;
-                    rankTitleInput.readOnly = !canEdit;
-                    rankTitleInput.onchange = () => {
+                rank.usernames.forEach((username, usernameIndex) => {
+                    const usernameInput = document.createElement('input');
+                    usernameInput.type = 'text';
+                    usernameInput.value = username;
+                    usernameInput.readOnly = !canEdit;
+                    usernameInput.onchange = () => {
                         if (canEdit) {
-                            rank.title = rankTitleInput.value;
+                            rank.usernames[usernameIndex] = usernameInput.value;
                             saveOrbat();
                         }
                     };
-                    rankDiv.appendChild(rankTitleInput);
-
-                    rank.usernames.forEach((username, usernameIndex) => {
-                        const usernameInput = document.createElement('input');
-                        usernameInput.type = 'text';
-                        usernameInput.value = username;
-                        usernameInput.readOnly = !canEdit;
-                        usernameInput.onchange = () => {
-                            if (canEdit) {
-                                rank.usernames[usernameIndex] = usernameInput.value;
-                                saveOrbat();
-                            }
-                        };
-                        rankDiv.appendChild(usernameInput);
-
-                        if (canEdit) {
-                            const deleteUsernameBtn = document.createElement('span');
-                            deleteUsernameBtn.className = 'delete-btn';
-                            deleteUsernameBtn.textContent = 'x';
-                            deleteUsernameBtn.onclick = () => {
-                                rank.usernames.splice(usernameIndex, 1);
-                                renderOrbat();
-                                saveOrbat();
-                            };
-                            rankDiv.appendChild(deleteUsernameBtn);
-                        }
-                    });
+                    rankDiv.appendChild(usernameInput);
 
                     if (canEdit) {
-                        const addUsernameBtn = document.createElement('button');
-                        addUsernameBtn.textContent = '+';
-                        addUsernameBtn.onclick = () => {
-                            rank.usernames.push('');
-                            renderOrbat();
-                        };
-                        rankDiv.appendChild(addUsernameBtn);
-                    }
-
-                    if (canEdit) {
-                        const deleteRankBtn = document.createElement('span');
-                        deleteRankBtn.className = 'delete-btn';
-                        deleteRankBtn.textContent = 'Delete Rank';
-                        deleteRankBtn.onclick = () => {
-                            box.ranks.splice(rankIndex, 1);
+                        const deleteUsernameBtn = document.createElement('span');
+                        deleteUsernameBtn.className = 'delete-btn';
+                        deleteUsernameBtn.textContent = 'x';
+                        deleteUsernameBtn.onclick = () => {
+                            rank.usernames.splice(usernameIndex, 1);
                             renderOrbat();
                             saveOrbat();
                         };
-                        rankDiv.appendChild(deleteRankBtn);
+                        rankDiv.appendChild(deleteUsernameBtn);
                     }
-
-                    boxDiv.appendChild(rankDiv);
                 });
 
                 if (canEdit) {
-                    const addRankBtn = document.createElement('button');
-                    addRankBtn.className = 'add-rank';
-                    addRankBtn.textContent = 'Add Rank';
-                    addRankBtn.onclick = () => {
-                        addRank(boxIndex);
+                    const addUsernameBtn = document.createElement('button');
+                    addUsernameBtn.textContent = '+';
+                    addUsernameBtn.onclick = () => {
+                        rank.usernames.push('');
+                        renderOrbat();
                     };
-                    boxDiv.appendChild(addRankBtn);
+                    rankDiv.appendChild(addUsernameBtn);
                 }
 
-                container.appendChild(boxDiv);
-            });
-        }
-
-        function addBox() {
-            const newBox = {
-                title: `Box ${boxes.length + 1}`,
-                ranks: [],
-                position: { x: 100, y: 50 }
-            };
-            boxes.push(newBox);
-            renderOrbat();
-            saveOrbat();
-        }
-
-        function addRank(boxIndex) {
-            const newRank = {
-                title: `Rank ${boxes[boxIndex].ranks.length + 1}`,
-                usernames: ['']
-            };
-            boxes[boxIndex].ranks.push(newRank);
-            renderOrbat();
-            saveOrbat();
-        }
-
-        function saveOrbat() {
-            console.log('Saving Orbat:', JSON.stringify({ boxes })); // Debugging: Log the data being sent
-            fetch('/api/orbat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ boxes }) // Ensure the entire boxes array is sent
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Orbat saved successfully');
-                } else {
-                    console.error('Failed to save Orbat:', data.message);
+                if (canEdit) {
+                    const deleteRankBtn = document.createElement('span');
+                    deleteRankBtn.className = 'delete-btn';
+                    deleteRankBtn.textContent = 'Delete Rank';
+                    deleteRankBtn.onclick = () => {
+                        box.ranks.splice(rankIndex, 1);
+                        renderOrbat();
+                        saveOrbat();
+                    };
+                    rankDiv.appendChild(deleteRankBtn);
                 }
-            })
-            .catch(error => {
-                console.error('Error saving Orbat:', error);
-            });
-        }
 
-        window.onload = renderOrbat;
-    </script>
+                boxDiv.appendChild(rankDiv);
+            });
+
+            if (canEdit) {
+                const addRankBtn = document.createElement('button');
+                addRankBtn.className = 'add-rank';
+                addRankBtn.textContent = 'Add Rank';
+                addRankBtn.onclick = () => {
+                    addRank(boxIndex);
+                };
+                boxDiv.appendChild(addRankBtn);
+            }
+
+            container.appendChild(boxDiv);
+        });
+    }
+
+    function addBox() {
+        const newBox = {
+            title: `Box ${boxes.length + 1}`,
+            ranks: [],
+            position: { x: 100, y: 50 }
+        };
+        boxes.push(newBox);
+        renderOrbat();
+        saveOrbat();
+    }
+
+    function addRank(boxIndex) {
+        const newRank = {
+            title: `Rank ${boxes[boxIndex].ranks.length + 1}`,
+            usernames: ['']
+        };
+        boxes[boxIndex].ranks.push(newRank);
+        renderOrbat();
+        saveOrbat();
+    }
+
+    function saveOrbat() {
+        console.log('Saving Orbat:', JSON.stringify({ boxes })); // Debugging: Log the data being sent
+        fetch('/api/orbat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ boxes }) // Ensure the entire boxes array is sent
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Orbat saved successfully');
+            } else {
+                console.error('Failed to save Orbat:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving Orbat:', error);
+        });
+    }
+
+    window.onload = renderOrbat;
+</script>
 </body>
 </html>
